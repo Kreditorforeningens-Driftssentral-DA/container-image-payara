@@ -1,11 +1,27 @@
-variable image_name {
+variable docker_image_name {
   type    = string
   default = "local/payara"
 }
 
-variable image_tags {
+variable docker_image_tags {
   type    = list(string)
   default = ["dev"]
+}
+
+# container repository push
+variable docker_login_username {
+  type    = string
+  default = "username"
+}
+
+variable docker_login_server   {
+  type    = string
+  default = "https://127.0.0.1:5000"
+}
+
+variable docker_login_password {
+  type    = string
+  default = "secret"
 }
 
 # ANSIBLE PLAYBOOK - PAYARA INSTALL

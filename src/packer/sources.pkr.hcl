@@ -90,8 +90,15 @@ build {
   # Tag the container image
   post-processors {
     post-processor "docker-tag" {
-      repository = var.image_name
-      tags       = var.image_tags
+      repository = var.docker_image_name
+      tags       = var.docker_image_tags
+    }
+
+    post-processor "docker-push" {
+      name = "push"
+      login_username = var.docker_login_username
+      login_server   = var.docker_login_server
+      login_password = var.docker_login_password
     }
   }
 }

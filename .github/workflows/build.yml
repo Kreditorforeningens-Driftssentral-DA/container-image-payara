@@ -1,0 +1,14 @@
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+---
+name: build
+on: [workflow_dispatch]
+jobs:
+  packer-public:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: |
+        packer version
+        docker version
+        ls -lsh
+...
