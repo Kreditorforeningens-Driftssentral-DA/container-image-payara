@@ -10,7 +10,7 @@ jobs:
     - run: |
         packer version
         docker version
-        pushd /src/packer
+        pushd src/packer
         packer validate .
         packer fmt -diff -write=false .
         popd
