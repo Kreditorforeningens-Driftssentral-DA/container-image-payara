@@ -8,7 +8,6 @@ export PKR_VAR_docker_login_username ?= dist
 export PKR_VAR_docker_login_password ?= kred.container.distrepos.com
 export PKR_VAR_docker_login_server   ?= kred.container.distrepos.com
 
-
 init:
 	@echo "TEST: ${TEST}"
 .PHONY: init

@@ -34,7 +34,7 @@ build {
     source      = "files/docker-entrypoint.sh"
     destination = "/docker-entrypoint.sh"
   }
-  
+
   # Prepare base image
   provisioner "shell" {
     environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
@@ -48,7 +48,7 @@ build {
 
   # Configure timezone & add locale
   provisioner "ansible" {
-    user = "root"
+    user          = "root"
     playbook_file = "files/ansible/configure_os.yml"
     extra_arguments = [
       "--extra-vars",
@@ -63,7 +63,7 @@ build {
 
   # Install payara & openjdk
   provisioner "ansible" {
-    user = "root"
+    user          = "root"
     playbook_file = "files/ansible/install_payara.yml"
     extra_arguments = [
       "--extra-vars",
@@ -76,8 +76,8 @@ build {
 
   # Configure payara
   provisioner "ansible" {
-    user            = "root"
-    playbook_file   = "files/ansible/configure_payara.yml"
+    user          = "root"
+    playbook_file = "files/ansible/configure_payara.yml"
     extra_arguments = [
       "--extra-vars",
       join(" ", [
@@ -95,7 +95,8 @@ build {
     }
 
     post-processor "docker-push" {
-      name = "push"
+      name           = "push-private"
+      login          = true
       login_username = var.docker_login_username
       login_server   = var.docker_login_server
       login_password = var.docker_login_password

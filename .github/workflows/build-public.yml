@@ -1,15 +1,13 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 ---
-name: build
+name: build-public
 on: [workflow_dispatch]
 jobs:
-  packer-public:
+  packer:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - run: |
-        packer version
-        docker version
         pushd src/packer
         packer validate .
         packer fmt -diff -write=false .

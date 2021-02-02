@@ -1,0 +1,25 @@
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+---
+name: build-private
+on: [workflow_dispatch]
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: |
+        set -x
+        PKR_VAR_openjdk_version="11"
+        PKR_VAR_payara_version="5.2020.7"
+        PKR_VAR_docker_image_name=${PRIVATE_REPO_URL}/payara
+        PKR_VAR_docker_image_tags=["dev"]
+        PKR_VAR_docker_login_username=${PRIVATE_REPO_USERNAME}
+        PKR_VAR_docker_login_password=${PRIVATE_REPO_SECRET}
+        PKR_VAR_docker_login_server=https://${PRIVATE_REPO_URL}
+        pushd src/packer
+        packer validate .
+        packer fmt -diff -write=false .
+        packer build .
+        docker images
+        popd
+...

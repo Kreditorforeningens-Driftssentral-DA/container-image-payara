@@ -14,7 +14,7 @@ variable docker_login_username {
   default = "username"
 }
 
-variable docker_login_server   {
+variable docker_login_server {
   type    = string
   default = "https://127.0.0.1:5000"
 }
