@@ -1,0 +1,45 @@
+---
+
+- name: CONFIGURE OS
+  hosts: default
+  become: true
+
+  tasks:
+
+  - name: TIMEZONE
+    block:
+    - name: preseed timezone continent
+      ansible.builtin.debconf:
+        name: tzdata
+        question: tzdata/Areas
+        value: "{{timezone_continent}}"
+        vtype: select
+
+    - name: preseed timezone city
+      ansible.builtin.debconf:
+        name: tzdata
+        question: "tzdata/Zones/{{timezone_continent}}"
+        value: "{{timezone_city}}"
+        vtype: select
+
+    - name: install timezone package(s)
+      ansible.builtin.package:
+        name:
+        - tzdata
+        state: present
+
+  - name: LOCALE
+    block:
+    - name: install locale package(s)
+      ansible.builtin.package:
+        name:
+        - "{{locale_package}}"
+        - locales
+        state: present
+
+    - name: generate locale
+      ansible.builtin.command:
+        argv:
+        - /usr/sbin/locale-gen
+        - "{{locale_name}}"
+...
