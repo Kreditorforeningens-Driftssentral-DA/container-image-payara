@@ -16,7 +16,7 @@ jobs:
       env:
         PKR_VAR_openjdk_version: "11"
         PKR_VAR_payara_version: "5.2020.7"
-        PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/payara"
+        PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/kds/payara"
         PKR_VAR_docker_image_tags: "[\"dev\"]"
         PKR_VAR_docker_login_username: "${{ secrets.PRIVATE_REPO_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.PRIVATE_REPO_SECRET }}"
