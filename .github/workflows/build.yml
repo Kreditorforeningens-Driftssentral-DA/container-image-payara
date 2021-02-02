@@ -10,5 +10,8 @@ jobs:
     - run: |
         packer version
         docker version
-        ls -lsh
+        pushd /src/packer
+        packer validate .
+        packer fmt -diff -write=false .
+        popd
 ...
