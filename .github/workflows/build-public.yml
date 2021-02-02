@@ -1,15 +1,18 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 ---
 name: build-public
+
 on: [workflow_dispatch]
+
+env:
+  EXAMPLE: Bye!
 jobs:
-  packer:
+  packer-payara-full:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: |
-        pushd src/packer
-        packer validate .
-        packer fmt -diff -write=false .
-        popd
+    - shell: bash
+      run: |
+        printf "[INFO] I have not impemented this pipeline yet\n"
+        echo "${EXAMPLE}"
 ...
