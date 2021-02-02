@@ -1,23 +1,30 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 ---
 name: build-private
+
 on: [workflow_dispatch]
+
+env:
+  docker_login_username: ${{ secrets.PRIVATE_REPO_USERNAME }}
+  docker_login_password: ${{ secrets.PRIVATE_REPO_SECRET }}
+  docker_login_server: ${{ secrets.PRIVATE_REPO_URL }}
+
 jobs:
   packer:
     runs-on: ubuntu-latest
-    env:
-      PKR_VAR_openjdk_version: 11
-      PKR_VAR_payara_version: 5.2020.7
-      PKR_VAR_docker_image_name: ${{ secrets.PRIVATE_REPO_URL }}/payara
-      PKR_VAR_docker_image_tags: '["dev"]'
-      PKR_VAR_docker_login_username: ${{ secrets.PRIVATE_REPO_USERNAME }}
-      PKR_VAR_docker_login_password: ${{ secrets.PRIVATE_REPO_SECRET }}
-      PKR_VAR_docker_login_server: https://${{ secrets.PRIVATE_REPO_URL }}
     steps:
     - uses: actions/checkout@v2
-    - run: |
+    - shell: bash
+      run: |
         set -x
         pushd src/packer
+        export PKR_VAR_openjdk_version="11"
+        export PKR_VAR_payara_version="5.2020.7"
+        export PKR_VAR_docker_image_name="${{ env.docker_login_server }}/payara"
+        export PKR_VAR_docker_image_tags: '["dev"]'
+        export PKR_VAR_docker_login_username="${{ env.docker_login_username }}"
+        export PKR_VAR_docker_login_password="${{ env.docker_login_password }}"
+        export PKR_VAR_docker_login_server="https://${{ env.docker_login_server }}"
         env
         packer validate .
         packer fmt -diff -write=false .
