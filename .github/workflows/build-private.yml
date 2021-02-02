@@ -5,18 +5,20 @@ on: [workflow_dispatch]
 jobs:
   packer:
     runs-on: ubuntu-latest
+    env:
+      PKR_VAR_openjdk_version: 11
+      PKR_VAR_payara_version: 5.2020.7
+      PKR_VAR_docker_image_name: ${{ secrets.PRIVATE_REPO_URL }}/payara
+      PKR_VAR_docker_image_tags: '["dev"]'
+      PKR_VAR_docker_login_username: ${{ secrets.PRIVATE_REPO_USERNAME }}
+      PKR_VAR_docker_login_password: ${{ secrets.PRIVATE_REPO_SECRET }}
+      PKR_VAR_docker_login_server: https://${{ secrets.PRIVATE_REPO_URL }}
     steps:
     - uses: actions/checkout@v2
     - run: |
         set -x
-        PKR_VAR_openjdk_version="11"
-        PKR_VAR_payara_version="5.2020.7"
-        PKR_VAR_docker_image_name=${PRIVATE_REPO_URL}/payara
-        PKR_VAR_docker_image_tags=["dev"]
-        PKR_VAR_docker_login_username=${PRIVATE_REPO_USERNAME}
-        PKR_VAR_docker_login_password=${PRIVATE_REPO_SECRET}
-        PKR_VAR_docker_login_server=https://${PRIVATE_REPO_URL}
         pushd src/packer
+        env
         packer validate .
         packer fmt -diff -write=false .
         packer build .
