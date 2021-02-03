@@ -30,9 +30,9 @@ variable payara_version {
   default = "5.2020.7"
 }
 
-variable openjdk_version {
+variable java_version {
   type    = string
-  default = "11"
+  default = "openjdk-11-jre-headless"
 }
 
 # ANSIBLE PLAYBOOK - OS CONFIG

@@ -1,26 +1,50 @@
 #!/usr/bin/env bash
-PAYARA_DIR=${PAYARA_DIR}
-PAYARA_ARGS=${PAYARA_ARGS}
-JVM_ARGS=${JVM_ARGS}
-CONFIG_DIR=${CONFIG_DIR}
-SCRIPT_DIR=${SCRIPT_DIR}
-DEPLOY_DIR=${DEPLOY_DIR}
-DEPLOY_PROPS=${DEPLOY_PROPS}
-DOMAIN_NAME=${DOMAIN_NAME}
-PATH_PREBOOT_COMMANDS=${PATH_PREBOOT_COMMANDS}
-PATH_POSTBOOT_COMMANDS=${PATH_POSTBOOT_COMMANDS}
-ADMIN_USER=${ADMIN_USER}
-PATH_ADMIN_SECRET=${PATH_ADMIN_SECRET}
+#PAYARA_DIR=${PAYARA_DIR}
+#PAYARA_ARGS=${PAYARA_ARGS}
+#PAYARA_USER=${PAYARA_USER}
+#JVM_ARGS=${JVM_ARGS}
+#CONFIG_DIR=${CONFIG_DIR}
+#SCRIPT_DIR=${SCRIPT_DIR}
+#DEPLOY_DIR=${DEPLOY_DIR}
+#DEPLOY_PROPS=${DEPLOY_PROPS}
+#DOMAIN_NAME=${DOMAIN_NAME}
+#PATH_PREBOOT_COMMANDS=${PATH_PREBOOT_COMMANDS}
+#PATH_POSTBOOT_COMMANDS=${PATH_POSTBOOT_COMMANDS}
+#ADMIN_USER=${ADMIN_USER}
+#PATH_ADMIN_SECRET=${PATH_ADMIN_SECRET}
 
-printf "[INFO] Creating ${CONFIG_DIR}, if missing\n"
-mkdir -p ${CONFIG_DIR}
+# -----------------------------------------------
+# CHECK IF REQUIRED VARIABLES ARE SET
+# -----------------------------------------------
+
+# Required
+if [ -z ${PAYARA_DIR} ]; then echo "[ERROR] Required variable PAYARA_DIR is not set."; exit 1; fi
+if [ -z ${PAYARA_USER} ]; then echo "[ERROR] Required variable PAYARA_USER is not set."; exit 1; fi
+if [ -z ${CONFIG_DIR} ]; then echo "[ERROR] Required variable CONFIG_DIR is not set."; exit 1; fi
+if [ -z ${SCRIPT_DIR} ]; then echo "[ERROR] Required variable SCRIPT_DIR is not set."; exit 1; fi
+if [ -z ${DEPLOY_DIR} ]; then echo "[ERROR] Required variable DEPLOY_DIR is not set."; exit 1; fi
+if [ -z ${DOMAIN_NAME} ]; then echo "[ERROR] Required variable DOMAIN_NAME is not set."; exit 1; fi
+if [ -z ${ADMIN_USER} ]; then echo "[ERROR] Required variable ADMIN_USER is not set."; exit 1; fi
+if [ -z ${PATH_ADMIN_SECRET} ]; then echo "[ERROR] Required variable PATH_ADMIN_SECRET is not set."; exit 1; fi
+if [ -z ${PATH_PREBOOT_COMMANDS} ]; then echo "[ERROR] Required variable PATH_PREBOOT_COMMANDS is not set."; exit 1; fi
+if [ -z ${PATH_POSTBOOT_COMMANDS} ]; then echo "[ERROR] Required variable PATH_POSTBOOT_COMMANDS is not set."; exit 1; fi
+
+# Optional
+if [ -z ${PAYARA_ARGS} ]; then echo "[INFO] Variable PAYARA_ARGS is empty."; fi
+if [ -z ${JVM_ARGS} ]; then echo "[INFO] Variable JVM_ARGS is empty."; fi
+if [ -z ${DEPLOY_PROPS} ]; then echo "[INFO] Variable DEPLOY_PROPS is empty."; fi
+
 # -----------------------------------------------
 # RUN CUSTOM STARTUP SCRIPTS (AS ROOT)
 # -----------------------------------------------
+
+printf "[INFO] Creating ${CONFIG_DIR}, if missing\n"
+mkdir -p ${CONFIG_DIR}
+
 printf "[INFO] Creating ${SCRIPT_DIR}/init.d, if missing\n"
 mkdir -p ${SCRIPT_DIR}/init.d
 
-printf '#!/usr/bin/env bash\necho "dummy script"\n' > ${SCRIPT_DIR}/init_0_dummy.sh
+printf '#!/usr/bin/env bash\necho "initia"\n' > ${SCRIPT_DIR}/init_0_dummy.sh
 printf '#!/usr/bin/env bash\necho "dummy script"\n' > ${SCRIPT_DIR}/init.d/dummy.sh
 
 # Execute init-scripts
@@ -44,6 +68,7 @@ done
 # -----------------------------------------------
 # CREATE BOOT-COMMAND FILES
 # -----------------------------------------------
+
 printf "[INFO] Creating pre/post-boot command files, if missing\n"
 touch ${PATH_PREBOOT_COMMANDS}
 touch ${PATH_POSTBOOT_COMMANDS}
@@ -51,6 +76,7 @@ touch ${PATH_POSTBOOT_COMMANDS}
 # -----------------------------------------------
 # CONFIGURE AUTO-DEPLOYMENT
 # -----------------------------------------------
+
 printf "[INFO] Creating deployment directory, if missing\n"
 mkdir -p ${DEPLOY_DIR}
 
@@ -86,19 +112,21 @@ done
 # -----------------------------------------------
 # VALIDATE PAYARA COMMAND (DRY-RUN)
 # -----------------------------------------------
+
 printf "[INFO] Validating payara command\n"
 OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} start-domain --dry-run --prebootcommandfile=${PATH_PREBOOT_COMMANDS} --postbootcommandfile=${PATH_PREBOOT_COMMANDS} ${PAYARA_ARGS} ${DOMAIN_NAME}`
 OUTPUT_STATUS=${?}
 if [ "${OUTPUT_STATUS}" -ne 0 ]
   then
     # Print to stderr & exit
-    printf "ERROR-MESSAGE [${OUTPUT_STATUS}]:\n${OUTPUT}\n" >&2
+    printf "ERROR [${OUTPUT_STATUS}]:\n${OUTPUT}\n" >&2
     exit 1
 fi
 
 # -----------------------------------------------
 # ADD JVM PARAMETERS TO STARTUP-COMMAND
 # -----------------------------------------------
+
 printf "[INFO] Appending JVM-parameters to payara command\n"
 COMMAND=`echo "${OUTPUT}" | sed -n -e '2,/^$/p' | sed "s|glassfish.jar|glassfish.jar ${JVM_ARGS}|g"`
 
@@ -109,17 +137,20 @@ echo "${COMMAND}" | tr ' ' '\n'
 # -----------------------------------------------
 # START PAYARA
 # -----------------------------------------------
-printf "[INFO] Starting Payara Server..\n\n"
-set -x
+
+set -e
 set -- ${COMMAND} < ${PATH_ADMIN_SECRET} 
 
-# Run as unprivileged user
-if id payara >/dev/null 2<&1; then
-  chown -HR payara:root ${PAYARA_DIR}
-  chown -HR payara:root ${CONFIG_DIR}
-  chown -HR payara:root ${DEPLOY_DIR}
-  chown -HR payara:root ${SCRIPT_DIR}
-  set -- gosu payara ${@}
+# Run as unprivileged user (if user exists)
+if id ${PAYARA_USER} >/dev/null 2<&1; then
+  printf "[INFO] Starting server as user \"${PAYARA_USER}\"..\n\n"
+  chown -HR ${PAYARA_USER}:root ${PAYARA_DIR}
+  chown -HR ${PAYARA_USER}:root ${CONFIG_DIR}
+  chown -HR ${PAYARA_USER}:root ${DEPLOY_DIR}
+  chown -HR ${PAYARA_USER}:root ${SCRIPT_DIR}
+  set -- gosu ${PAYARA_USER} ${@}
+else
+  printf "[WARNING] User \"${PAYARA_USER}\" doesn't exist. Starting server as user \"root\"\n"
 fi
 
 exec "${@}"

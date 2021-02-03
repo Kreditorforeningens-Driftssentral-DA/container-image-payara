@@ -1,33 +1,33 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 ---
-name: build-private
+name: Packer Private
 
 on: [workflow_dispatch]
 
-env:
-  EXAMPLE_ENV: "Works"
-
 jobs:
-  packer:
+  payara-v5-2020-7_jre-11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - shell: bash
       env:
-        PKR_VAR_openjdk_version: "11"
+        TARGET_BUILD: v5-2020-7_jre-11.docker.UBUNTU_2004
+        PKR_VAR_java_version: "openjdk-11-jre-headless"
         PKR_VAR_payara_version: "5.2020.7"
+        PKR_VAR_asadmin_password: "${{ secrets.ASADMIN_PASSWORD }}"
         PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/kds/payara"
-        PKR_VAR_docker_image_tags: "[\"dev\"]"
         PKR_VAR_docker_login_username: "${{ secrets.PRIVATE_REPO_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.PRIVATE_REPO_SECRET }}"
         PKR_VAR_docker_login_server: "https://${{ secrets.PRIVATE_REPO_URL }}"
       run: |
-        set -x
+        # BUILD & PUSH PAYARA IMAGE
+        set -e
+        packer version
+        docker --version
+        ansible --version | head -n 1
         pushd src/packer
-        env
-        packer validate .
+        packer validate -only=${TARGET_BUILD} .
         packer fmt -diff -write=false .
-        packer build .
-        docker images
+        packer build -only=${TARGET_BUILD} .
         popd
 ...
