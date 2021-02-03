@@ -1,20 +1,42 @@
 #!/usr/bin/env bash
-#PAYARA_DIR=${PAYARA_DIR}
-#PAYARA_ARGS=${PAYARA_ARGS}
-#PAYARA_USER=${PAYARA_USER}
-#JVM_ARGS=${JVM_ARGS}
-#CONFIG_DIR=${CONFIG_DIR}
-#SCRIPT_DIR=${SCRIPT_DIR}
-#DEPLOY_DIR=${DEPLOY_DIR}
-#DEPLOY_PROPS=${DEPLOY_PROPS}
-#DOMAIN_NAME=${DOMAIN_NAME}
-#PATH_PREBOOT_COMMANDS=${PATH_PREBOOT_COMMANDS}
-#PATH_POSTBOOT_COMMANDS=${PATH_POSTBOOT_COMMANDS}
-#ADMIN_USER=${ADMIN_USER}
-#PATH_ADMIN_SECRET=${PATH_ADMIN_SECRET}
 
 # -----------------------------------------------
-# CHECK IF REQUIRED VARIABLES ARE SET
+# VALIDATE STARTUP COMMAND
+# -----------------------------------------------
+
+printf "\n\n*** CONTAINER INFO ***\n"
+printf "  Host: $(hostname)\n"
+printf "    IP: $(hostname -I)\n"
+printf "    OS: $(cat /etc/issue.net)\n"
+printf "*** CONTAINER INFO ***\n\n"
+
+case "${1}" in
+  'start')
+    printf "[INFO] Starting Payara Server..\n"
+    # Clear all arguments
+    shift "${#}"
+    ;;
+
+  'debug')
+    printf "[INFO] Starting shell..\n\n"
+    exec /bin/bash
+    exit 0
+    ;;
+
+  *)
+    printf "\n[CONTAINER HELP]\n\n"
+    printf "  Valid Commands:\n"
+    printf "    start -> (default) Starts the Payara Server\n"
+    printf "    debug -> Opens shell as root\n\n"
+    printf "  Examples:\n"
+    printf "    docker run --rm -it -p 8080:8080 -p 4848:4848 <container-image>\n"
+    printf "    docker run --rm -it -p 8080:8080 -p 4848:4848 <container-image> debug\n\n"
+    exit 0
+    ;;
+esac
+
+# -----------------------------------------------
+# VALIDATE VARIABLES
 # -----------------------------------------------
 
 # Required
@@ -44,12 +66,12 @@ mkdir -p ${CONFIG_DIR}
 printf "[INFO] Creating ${SCRIPT_DIR}/init.d, if missing\n"
 mkdir -p ${SCRIPT_DIR}/init.d
 
-printf '#!/usr/bin/env bash\necho "initia"\n' > ${SCRIPT_DIR}/init_0_dummy.sh
-printf '#!/usr/bin/env bash\necho "dummy script"\n' > ${SCRIPT_DIR}/init.d/dummy.sh
+printf '#!/usr/bin/env bash\necho "init-scripts.."\n' > ${SCRIPT_DIR}/init_0_dummy.sh
+printf '#!/usr/bin/env bash\necho "user-scripts.."\n' > ${SCRIPT_DIR}/init.d/dummy.sh
 
 # Execute init-scripts
-printf "[INFO] Files in ${SCRIPT_DIR}\n"
-find ${SCRIPT_DIR} -maxdepth 1 -type f
+#printf "[INFO] Files in ${SCRIPT_DIR}\n"
+#find ${SCRIPT_DIR} -maxdepth 1 -type f
 for file in ${SCRIPT_DIR}/init_*.sh; do
   printf "[Entrypoint] Running ${file}\n"
   chmod +x ${file}
@@ -57,8 +79,8 @@ for file in ${SCRIPT_DIR}/init_*.sh; do
 done
 
 # Execute other scripts
-printf "[INFO] Files in ${SCRIPT_DIR}/init.d"
-find ${SCRIPT_DIR}/init.d -maxdepth 1 -type f 
+#printf "[INFO] Files in ${SCRIPT_DIR}/init.d"
+#find ${SCRIPT_DIR}/init.d -maxdepth 1 -type f 
 for file in ${SCRIPT_DIR}/init.d/*.sh; do
   printf "[Entrypoint] Running ${file}\n"
   chmod +x ${file}
@@ -66,11 +88,13 @@ for file in ${SCRIPT_DIR}/init.d/*.sh; do
 done
 
 # -----------------------------------------------
-# CREATE BOOT-COMMAND FILES
+# CREATE PRE/POST-BOOT-COMMAND FILES
 # -----------------------------------------------
 
-printf "[INFO] Creating pre/post-boot command files, if missing\n"
+printf "[INFO] Creating pre-boot command file, if missing\n"
 touch ${PATH_PREBOOT_COMMANDS}
+
+printf "[INFO] Creating post-boot command file, if missing\n"
 touch ${PATH_POSTBOOT_COMMANDS}
 
 # -----------------------------------------------
@@ -88,7 +112,7 @@ deploy() {
     return 0;
   fi
 
-  # Check if command already exists
+  # Check if command already exists in post-boot deployments
   if grep -q ${1} ${PATH_POSTBOOT_COMMANDS}; then
     echo "Ignoring already included deployment: ${1}"
   else
@@ -114,12 +138,14 @@ done
 # -----------------------------------------------
 
 printf "[INFO] Validating payara command\n"
-OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} start-domain --dry-run --prebootcommandfile=${PATH_PREBOOT_COMMANDS} --postbootcommandfile=${PATH_PREBOOT_COMMANDS} ${PAYARA_ARGS} ${DOMAIN_NAME}`
+OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} start-domain --dry-run --prebootcommandfile=${PATH_PREBOOT_COMMANDS} --postbootcommandfile=${PATH_POSTBOOT_COMMANDS} ${PAYARA_ARGS} ${DOMAIN_NAME}`
 OUTPUT_STATUS=${?}
+
 if [ "${OUTPUT_STATUS}" -ne 0 ]
   then
     # Print to stderr & exit
-    printf "ERROR [${OUTPUT_STATUS}]:\n${OUTPUT}\n" >&2
+    printf "[ERROR] Dry-run failed\n"
+    echo "${OUTPUT}" >&2
     exit 1
 fi
 
@@ -127,11 +153,11 @@ fi
 # ADD JVM PARAMETERS TO STARTUP-COMMAND
 # -----------------------------------------------
 
-printf "[INFO] Appending JVM-parameters to payara command\n"
+printf "[INFO] Appending JVM_ARGS to payara command\n"
 COMMAND=`echo "${OUTPUT}" | sed -n -e '2,/^$/p' | sed "s|glassfish.jar|glassfish.jar ${JVM_ARGS}|g"`
 
 # Print command, line by line
-printf "[INFO] Finalized startup command:\n"
+printf "[INFO] Startup Command:\n"
 echo "${COMMAND}" | tr ' ' '\n'
 
 # -----------------------------------------------
@@ -141,7 +167,7 @@ echo "${COMMAND}" | tr ' ' '\n'
 set -e
 set -- ${COMMAND} < ${PATH_ADMIN_SECRET} 
 
-# Run as unprivileged user (if user exists)
+# Run as unprivileged user (if 'PAYARA_USER' user exists)
 if id ${PAYARA_USER} >/dev/null 2<&1; then
   printf "[INFO] Starting server as user \"${PAYARA_USER}\"..\n\n"
   chown -HR ${PAYARA_USER}:root ${PAYARA_DIR}
@@ -150,7 +176,7 @@ if id ${PAYARA_USER} >/dev/null 2<&1; then
   chown -HR ${PAYARA_USER}:root ${SCRIPT_DIR}
   set -- gosu ${PAYARA_USER} ${@}
 else
-  printf "[WARNING] User \"${PAYARA_USER}\" doesn't exist. Starting server as user \"root\"\n"
+  printf "[WARNING] User \"${PAYARA_USER}\" doesn't exist. Starting server as \"root\"\n"
 fi
 
 exec "${@}"

@@ -22,5 +22,6 @@ source docker "UBUNTU_2004" {
     "ENV PATH_ADMIN_SECRET=$${PAYARA_DIR}/secret.txt",
     "WORKDIR $${PAYARA_DIR}",
     "ENTRYPOINT [\"/usr/bin/tini\", \"--\", \"/docker-entrypoint.sh\"]",
+    "CMD [\"start\"]",
   ]
 }

@@ -9,18 +9,13 @@ build {
     destination = "/"
   }
 
-  # PREPARE BASE IMAGE
-  # INCLUDED IN CUSTOMIZED BASE IMAGE
-  #provisioner "shell" {
-  #  environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-  #  inline = [
-  #    "set -e",
-  #    "chmod +x /docker-entrypoint.sh",
-  #    "apt-get -qqy update",
-  #    "apt-get -qqy install dialog apt-utils tini gosu python3-minimal python3-apt unzip curl jq gnupg2",
-  #    "apt-get -qqy clean",
-  #  ]
-  #}
+  provisioner "shell" {
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    inline = [
+      "set -e",
+      "chmod +x /docker-entrypoint.sh",
+    ]
+  }
 
   # PROVISION TIMEZONE & LOCALE
   provisioner "ansible" {

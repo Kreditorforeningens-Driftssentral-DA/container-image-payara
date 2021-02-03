@@ -4,16 +4,29 @@ name: Packer Public
 
 on: [workflow_dispatch]
 
-env:
-  EXAMPLE: Bye!
 jobs:
-  packer-payara-full:
+  payara-v5-2020-7_jre-11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - shell: bash
+      env:
+        TARGET_BUILD: v5-2020-7_jre-11.docker.UBUNTU_2004
+        PKR_VAR_java_version: openjdk-11-jre-headless
+        PKR_VAR_payara_version: "5.2020.7"
+        PKR_VAR_docker_image_name: registry.hub.docker.com//kds/payara"
+        PKR_VAR_docker_login_server: "registry.hub.docker.com"
+        PKR_VAR_docker_login_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+        PKR_VAR_docker_login_password: "${{ secrets.DOCKER_HUB_SECRET }}"
       run: |
+        # BUILD & PUSH PAYARA IMAGE
         set -e
-        printf "[INFO] I have not impemented this pipeline yet\n"
-        echo "${EXAMPLE}"
+        packer version
+        docker --version
+        ansible --version | head -n 1
+        pushd src/packer
+        packer validate -only=${TARGET_BUILD} .
+        packer fmt -diff -write=false .
+        packer build -only=${TARGET_BUILD} .
+        popd
 ...

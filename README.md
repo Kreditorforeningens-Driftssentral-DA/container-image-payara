@@ -9,6 +9,17 @@ Packer, Ansible, Shell (bash), Git, GitHub Actions
 * Payara official [Dockerfile]("https://hub.docker.com/r/payara/server-full/Dockerfile") on Docker Hub.
 * Payara [Releases]("https://github.com/payara/Payara/releases") on GitHub
 
+#### EXAMPLE
+```bash
+# Starting server ..
+# Default secure-admin credentials (public image):
+# admin / Admin123
+docker run --rm -it -p 8080:8080 -p 4848:4848 <image>
+
+# Access container via commandline
+docker run --rm -it -p 8080:8080 -p 4848:4848 <image> debug
+```
+
 ## FEATURES
 
 >   * Automated build of public container, with default values

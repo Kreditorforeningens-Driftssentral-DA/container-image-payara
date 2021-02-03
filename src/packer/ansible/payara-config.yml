@@ -8,7 +8,7 @@
   become: true
 
   tasks:
-  - name: add asadmin password
+  - name: CREATE ASADMIN PASSWORD
     block:
     - ansible.builtin.copy:
         content: |
@@ -28,7 +28,7 @@
         path: /tmp/secret.txt
         state: absent
 
-  - name: configure server settings
+  - name: CONFIGURE PAYARA SETTINGS
     block:
     - ansible.builtin.copy:
         content: |
