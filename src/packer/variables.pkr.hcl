@@ -1,3 +1,4 @@
+# CONTAINER SETTINGS
 variable docker_image_name {
   type    = string
   default = "local/payara"
@@ -8,7 +9,6 @@ variable docker_image_tags {
   default = ["dev"]
 }
 
-# container repository push
 variable docker_login_username {
   type    = string
   default = "username"
@@ -24,18 +24,17 @@ variable docker_login_password {
   default = "secret"
 }
 
-# ANSIBLE PLAYBOOK - PAYARA INSTALL
-variable payara_version {
+# ANSIBLE PLAYBOOK VARIABLES
+variable timezone_continent {
   type    = string
-  default = "5.2020.7"
+  default = "Europe"
 }
 
-variable java_version {
+variable timezone_city {
   type    = string
-  default = "openjdk-11-jre-headless"
+  default = "Oslo"
 }
 
-# ANSIBLE PLAYBOOK - OS CONFIG
 variable locale_name {
   type    = string
   default = "nb_NO ISO-8859-1"
@@ -51,23 +50,42 @@ variable locale_package {
   default = "language-pack-nb"
 }
 
-variable timezone_continent {
+variable java_version {
   type    = string
-  default = "Europe"
+  default = "openjdk-11-jre-headless"
 }
 
-variable timezone_city {
+variable java_max_ram {
   type    = string
-  default = "Oslo"
+  default = "85"
 }
 
-# ANSIBLE PLAYBOOK - PAYARA CONFIG
-variable domain_name {
+variable payara_version_major {
+  type    = string
+  default = "5"
+}
+
+variable payara_version_minor {
+  type    = string
+  default = "2020.7"
+}
+
+variable payara_user {
+  type    = string
+  default = "payara"
+}
+
+variable payara_group {
+  type    = string
+  default = "payara"
+}
+
+variable payara_domain {
   type    = string
   default = "production"
 }
 
-variable asadmin_password {
+variable payara_asadmin_password {
   type    = string
   default = "Admin123"
 }

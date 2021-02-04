@@ -3,57 +3,25 @@ build {
 
   sources = ["source.docker.UBUNTU_2004"]
 
-  # ADD ENTRYPOINT SCRIPT
-  provisioner "file" {
-    sources     = ["docker-entrypoint.sh"]
-    destination = "/"
-  }
-
-  provisioner "shell" {
-    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    inline = [
-      "set -e",
-      "chmod +x /docker-entrypoint.sh",
-    ]
-  }
-
   # PROVISION TIMEZONE & LOCALE
   provisioner "ansible" {
     user          = "root"
-    playbook_file = "ansible/os-config.yml"
+    playbook_file = "ansible/provision.yml"
     extra_arguments = [
       "--extra-vars",
       join(" ", [
-        "locale_name=${var.locale_name}",
-        "locale_package=${var.locale_package}",
-        "timezone_continent=${var.timezone_continent}",
-        "timezone_city=${var.timezone_city}",
-      ])
-    ]
-  }
-
-  # INSTALL PAYARA & JAVA
-  provisioner "ansible" {
-    user          = "root"
-    playbook_file = "ansible/payara-install.yml"
-    extra_arguments = [
-      "--extra-vars",
-      join(" ", [
-        "java_version=${var.java_version}",
-        "payara_version=${var.payara_version}"
-      ])
-    ]
-  }
-
-  # CONFIGURE PAYARA
-  provisioner "ansible" {
-    user          = "root"
-    playbook_file = "ansible/payara-config.yml"
-    extra_arguments = [
-      "--extra-vars",
-      join(" ", [
-        "asadmin_password=${var.asadmin_password}",
-        "domain_name=${var.domain_name}",
+        "TIMEZONE_CONTINENT=${var.timezone_continent}",
+        "TIMEZONE_CITY=${var.timezone_city}",
+        "LOCALE_NAME=${var.locale_name}",
+        "LOCALE_LANGUAGE_PACKAGE=${var.locale_package}",
+        "JAVA_VERSION=${var.java_version}",
+        "JAVA_MAX_RAM=${var.java_max_ram}",
+        "PAYARA_GROUP=${var.payara_group}",
+        "PAYARA_USER=${var.payara_user}",
+        "PAYARA_VERSION_MAJOR=${var.payara_version_major}",
+        "PAYARA_VERSION_MINOR=${var.payara_version_minor}",
+        "PAYARA_DOMAIN=${var.payara_domain}",
+        "PAYARA_ASADMIN_PASSWORD=${var.payara_asadmin_password}",
       ])
     ]
   }
@@ -62,8 +30,8 @@ build {
   post-processors {
     post-processor "docker-tag" {
       only       = ["docker.UBUNTU_2004"]
-      repository = var.docker_image_name
       tags       = ["v5-2020-7_jre-11"]
+      repository = var.docker_image_name
     }
 
     post-processor "docker-push" {

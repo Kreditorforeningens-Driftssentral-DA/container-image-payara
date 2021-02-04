@@ -12,6 +12,7 @@ Packer, Ansible, Shell (bash), Git, GitHub Actions
 * Official [Payara Releases](https://github.com/payara/Payara/releases) on GitHub
 
 #### EXAMPLE
+
 ```bash
 # Starting server ..
 # Default secure-admin credentials (public image):

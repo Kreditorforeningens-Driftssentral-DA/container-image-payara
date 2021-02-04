@@ -11,23 +11,22 @@ jobs:
     - uses: actions/checkout@v2
     - shell: bash
       env:
-        TARGET_BUILD: v5-2020-7_jre-11.docker.UBUNTU_2004
-        PKR_VAR_java_version: openjdk-11-jre-headless
-        PKR_VAR_payara_version: "5.2020.7"
+        TARGET_BUILD: v5-2020-7_jre-11
+        TARGET_SOURCE: docker.UBUNTU_2004
         PKR_VAR_asadmin_password: "${{ secrets.ASADMIN_PASSWORD }}"
         PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/kds/payara"
         PKR_VAR_docker_login_username: "${{ secrets.PRIVATE_REPO_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.PRIVATE_REPO_SECRET }}"
         PKR_VAR_docker_login_server: "https://${{ secrets.PRIVATE_REPO_URL }}"
       run: |
-        # BUILD & PUSH PAYARA IMAGE
+        # [PAYARA] BUILD & PUSH TO PRIVATE REGISTRY
         set -e
         packer version
         docker --version
         ansible --version | head -n 1
         pushd src/packer
-        packer validate -only=${TARGET_BUILD} .
         packer fmt -diff -write=false .
-        packer build -only=${TARGET_BUILD} .
+        packer validate -only=${TARGET_BUILD}.${TARGET_SOURCE} .
+        packer build -only=${TARGET_BUILD}.${TARGET_SOURCE} .
         popd
 ...

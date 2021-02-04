@@ -1,8 +1,8 @@
-# Cache objects
-packer_cache/
+# Packer cache
+**/packer_cache/*
 
-# Crash log
+# Ansible cache
+**/ansible/cache/*
+
+# Crash logs
 crash.log
-
-# For built boxes
-*.box
