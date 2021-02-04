@@ -19,7 +19,7 @@ jobs:
         PKR_VAR_docker_login_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.DOCKER_HUB_SECRET }}"
       run: |
-        # [UBUNTU] BUILD & PUSH TO DOCKER HUB
+        # [PAYARA] BUILD & PUSH TO DOCKER HUB
         set -e
         packer version
         docker --version
