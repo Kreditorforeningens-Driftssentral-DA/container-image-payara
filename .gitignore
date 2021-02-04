@@ -1,8 +1,5 @@
 # Packer cache
 **/packer_cache/*
 
-# Ansible cache
-**/ansible/cache/*
-
 # Crash logs
 crash.log
