@@ -154,7 +154,7 @@ fi
 # -----------------------------------------------
 
 printf "[INFO] Appending JVM_ARGS to payara command\n"
-COMMAND=`echo "${OUTPUT}" | sed -n -e '2,/^$/p' | sed "s|glassfish.jar|glassfish.jar ${JVM_ARGS}|g"`
+COMMAND=`echo "${OUTPUT}" | sed -n -e '2,/^$/p' | sed "s|glassfish.jar|glassfish.jar ${JVM_ARGS} |g"`
 
 # Print command, line by line
 printf "[INFO] Startup Command:\n"
