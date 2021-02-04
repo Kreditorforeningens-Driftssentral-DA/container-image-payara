@@ -6,6 +6,8 @@
 Container image for Payara Server (java application server) using
 Packer, Ansible, Shell (bash), Git, GitHub Actions
 
+#### LINKS
+* Public image on Docker Hub: https://registry.hub.docker.com/r/kdsda/payara
 * Official [Payara Dockerfile]("https://hub.docker.com/r/payara/server-full/Dockerfile") on Docker Hub.
 * Official [Payara Releases]("https://github.com/payara/Payara/releases") on GitHub
 

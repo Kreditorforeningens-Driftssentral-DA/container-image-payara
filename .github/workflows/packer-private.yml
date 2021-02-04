@@ -12,7 +12,7 @@ jobs:
     - shell: bash
       env:
         TARGET_BUILD: v5-2020-7_jre-11.docker.UBUNTU_2004
-        PKR_VAR_java_version: "openjdk-11-jre-headless"
+        PKR_VAR_java_version: openjdk-11-jre-headless
         PKR_VAR_payara_version: "5.2020.7"
         PKR_VAR_asadmin_password: "${{ secrets.ASADMIN_PASSWORD }}"
         PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/kds/payara"

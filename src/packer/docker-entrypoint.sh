@@ -122,13 +122,13 @@ deploy() {
 }
 
 # Check for rar-files/folders to deploy first
-printf "[INFO] Deploying rar-files/folders\n"
+printf "[INFO] Adding rar-deployments to post-boot (files/folders)\n"
 for deployment in $(find ${DEPLOY_DIR} -mindepth 1 -maxdepth 1 -name "*.rar"); do
   deploy ${deployment}
 done
 
 # Check for war, jar, ear-files or directory to deploy (exluding *.rar files/folders)
-printf "[INFO] Deploying other files/folders\n"
+printf "[INFO] Deploying other deployments to post-boot (files/folders)\n"
 for deployment in $(find ${DEPLOY_DIR} -mindepth 1 -maxdepth 1 ! -name "*.rar" -a -name "*.war" -o -name "*.ear" -o -name "*.jar" -o -type d); do
   deploy ${deployment}
 done
