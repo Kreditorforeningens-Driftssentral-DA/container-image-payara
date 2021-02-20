@@ -1,5 +1,5 @@
 build {
-  name = "v5-2020-7_jre-11"
+  name = "v5-2021-1_jre-11"
 
   sources = ["source.docker.UBUNTU_2004"]
 
@@ -30,7 +30,7 @@ build {
   post-processors {
     post-processor "docker-tag" {
       only       = ["docker.UBUNTU_2004"]
-      tags       = ["v5-2020-7_jre-11"]
+      tags       = ["v5-2021-1_jre-11"]
       repository = var.docker_image_name
     }
 

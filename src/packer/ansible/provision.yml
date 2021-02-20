@@ -56,6 +56,10 @@
         - tzdata
         state: present
 # -----------------------------------------------
+  - name:
+    ansible.builtin.apt:
+      update_cache: yes
+# -----------------------------------------------
   - name: ADD LOCALE
     block:
     - name: installing laguagepack(s)

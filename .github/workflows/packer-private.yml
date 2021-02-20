@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@v2
     - shell: bash
       env:
-        TARGET_BUILD: v5-2020-7_jre-11
+        TARGET_BUILD: v5-2021-1_jre-11
         TARGET_SOURCE: docker.UBUNTU_2004
         PKR_VAR_asadmin_password: "${{ secrets.ASADMIN_PASSWORD }}"
         PKR_VAR_docker_image_name: "${{ secrets.PRIVATE_REPO_URL }}/kds/payara"

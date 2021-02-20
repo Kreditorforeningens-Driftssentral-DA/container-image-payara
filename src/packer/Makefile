@@ -1,5 +1,5 @@
 # Variables named PKR_VAR_* are passed to Packer build
-export TARGET_BUILD	 ?= v5-2020-7_jre-11
+export TARGET_BUILD	 ?= v5-2021-1_jre-11
 export TARGET_SOURCE ?= docker.UBUNTU_2004
 
 # Packer variables

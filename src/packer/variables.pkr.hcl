@@ -67,7 +67,7 @@ variable payara_version_major {
 
 variable payara_version_minor {
   type    = string
-  default = "2020.7"
+  default = "2021.1"
 }
 
 variable payara_user {
