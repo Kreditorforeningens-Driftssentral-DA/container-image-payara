@@ -5,13 +5,13 @@ name: Packer Public
 on: [workflow_dispatch]
 
 jobs:
-  payara-v5-2020-7_jre-11:
+  payara-v5-2021-3_jre-11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - shell: bash
       env:
-        TARGET_BUILD: v5-2021-1_jre-11
+        TARGET_BUILD: v5-2021-3_jre-11
         TARGET_SOURCE: docker.UBUNTU_2004
         PKR_VAR_docker_image_name: "registry.hub.docker.com/kdsda/payara"
         PKR_VAR_docker_login_server: "registry.hub.docker.com"

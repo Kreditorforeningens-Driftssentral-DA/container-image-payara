@@ -57,6 +57,12 @@ if [ -z ${JVM_ARGS} ]; then echo "[INFO] Variable JVM_ARGS is empty."; fi
 if [ -z ${DEPLOY_PROPS} ]; then echo "[INFO] Variable DEPLOY_PROPS is empty."; fi
 
 # -----------------------------------------------
+# ISSUES
+# -----------------------------------------------
+# Workaround https://github.com/payara/Payara/issues/2267
+echo 127.0.0.1 `cat /etc/hostname` >> /etc/hosts
+
+# -----------------------------------------------
 # RUN CUSTOM STARTUP SCRIPTS (AS ROOT)
 # -----------------------------------------------
 
