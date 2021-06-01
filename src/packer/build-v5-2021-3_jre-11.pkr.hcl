@@ -30,7 +30,7 @@ build {
   post-processors {
     post-processor "docker-tag" {
       only       = ["docker.UBUNTU_2004"]
-      tags       = ["v5-2021-1_jre-11"]
+      tags       = ["v5-2021-3_jre-11"]
       repository = var.docker_image_name
     }
 
