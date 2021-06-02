@@ -1,3 +1,8 @@
+variable build_date {
+  type    = string
+  default = "2021.1"
+}
+
 # CONTAINER SETTINGS
 variable docker_image_name {
   type    = string

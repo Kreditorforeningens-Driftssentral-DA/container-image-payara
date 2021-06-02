@@ -1,7 +1,7 @@
 build {
-  name = "v5-2021-3_jre-11"
+  name = "v5-2020-7_jre-11"
 
-  sources = ["source.docker.UBUNTU_2004"]
+  sources = ["source.docker.UBUNTU_BASE_2004"]
 
   # CONFIGURE
   provisioner "ansible" {
@@ -30,7 +30,7 @@ build {
   post-processors {
     post-processor "docker-tag" {
       only       = ["docker.UBUNTU_2004"]
-      tags       = ["v5-2021-3_jre-11"]
+      tags       = ["5.2020.7-11"]
       repository = var.docker_image_name
     }
 

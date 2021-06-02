@@ -2,23 +2,32 @@
 ---
 name: Packer Public
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '30 0 * * 5' # https://crontab.guru/
 
 jobs:
-  payara-v5-2021-3_jre-11:
+  v5-2021-3_11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - shell: bash
+    - name: Create tag from current year/week
+      id: tag
+      shell: bash
+      run: echo "::set-output name=week::$(date +'%Y.%V')"
+    - name: Build & push public image
+      shell: bash
       env:
-        TARGET_BUILD: v5-2021-3_jre-11
-        TARGET_SOURCE: docker.UBUNTU_2004
+        TARGET_BUILD: '5.2021.3-11'
+        TARGET_SOURCE: docker.UBUNTU_BASE_2004
+        PKR_VAR_build_date: "${{ steps.tag.outputs.week }}"
         PKR_VAR_docker_image_name: "registry.hub.docker.com/kdsda/payara"
         PKR_VAR_docker_login_server: "registry.hub.docker.com"
         PKR_VAR_docker_login_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.DOCKER_HUB_SECRET }}"
       run: |
-        # [PAYARA] BUILD & PUSH TO DOCKER HUB
+        # [INFO] BUILD & PUSH IMAGE TO DOCKER HUB
         set -e
         packer version
         docker --version
@@ -28,4 +37,3 @@ jobs:
         packer fmt -diff -write=false .
         packer build -only=${TARGET_BUILD}.${TARGET_SOURCE} .
         popd
-...

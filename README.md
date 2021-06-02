@@ -6,6 +6,11 @@
 Container image for Payara Server (java application server) using
 Packer, Ansible, Shell (bash), Git, GitHub Actions
 
+```bash
+# Public image admin-credentials
+admin / Admin123
+```
+
 #### LINKS
 * Public image on Docker Hub: https://registry.hub.docker.com/r/kdsda/payara, built from this repo
 * Official [Payara Dockerfile](https://hub.docker.com/r/payara/server-full/Dockerfile) on Docker Hub.
@@ -25,8 +30,8 @@ docker run --rm -it -p 8080:8080 -p 4848:4848 <image> debug
 
 ## FEATURES
 
->   * Automated build of public container, with default values
->   * Easy to build/modify custom versions & push to e.g. private repository
+> * Automated build of public container, with default values
+> * Easy to build/modify custom versions & push to e.g. private repository
 
 ## ONGOING
 

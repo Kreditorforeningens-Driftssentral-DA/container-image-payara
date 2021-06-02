@@ -1,6 +1,6 @@
 # Variables named PKR_VAR_* are passed to Packer build
-export TARGET_BUILD	 ?= v5-2021-1_jre-11
-export TARGET_SOURCE ?= docker.UBUNTU_2004
+export TARGET_BUILD	 ?= 5.2021.3-11
+export TARGET_SOURCE ?= docker.UBUNTU_BASE_2004
 
 # Packer variables
 export PKR_VAR_docker_image_name ?= local/payara

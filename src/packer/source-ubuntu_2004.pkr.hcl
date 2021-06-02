@@ -1,6 +1,6 @@
-source docker "UBUNTU_2004" {
+source docker "UBUNTU_BASE_2004" {
   #image  = "registry.hub.docker.com/library/ubuntu:latest"
-  image  = "registry.hub.docker.com/kdsda/ubuntu-base:2004"
+  image  = "registry.hub.docker.com/kdsda/ubuntu-base:latest"
   commit = true
   changes = [
     "EXPOSE 8080 4848 9009 8181",
