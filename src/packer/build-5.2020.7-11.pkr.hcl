@@ -29,7 +29,7 @@ build {
   # TAG CONTAINER & PUSH TO REGISTRY
   post-processors {
     post-processor "docker-tag" {
-      only       = ["docker.UBUNTU_2004"]
+      only       = ["docker.UBUNTU_BASE_2004"]
       tags       = ["5.2020.7-11"]
       repository = var.docker_image_name
     }
