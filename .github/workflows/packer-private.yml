@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  v5-2021-3_11:
+  v5-2021-6_11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
     - name: Build & push private image
       shell: bash
       env:
-        TARGET_BUILD: '5.2021.3-11'
+        TARGET_BUILD: '5.2021.6-11'
         TARGET_SOURCE: docker.UBUNTU_BASE_2004
         PKR_VAR_build_date: "${{ steps.tag.outputs.week }}"
         PKR_VAR_asadmin_password: "${{ secrets.ASADMIN_PASSWORD }}"
