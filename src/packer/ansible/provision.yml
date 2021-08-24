@@ -94,6 +94,25 @@
         name: "{{java['version']}}"
         state: present
 # -----------------------------------------------
+  - name: PAYARA LOGBACK INSTALLATION
+    block:
+    - name: downloading payara logback files
+      local_action:
+        module: ansible.builtin.get_url
+        url: "https://repo1.maven.org/maven2/io/github/goodees/payara-logback-delegation/{{payara_logback_version|default('1.0.0')}}/payara-logback-delegation-{{payara_logback_version|default('1.0.0')}}.jar"
+        dest: "cache/payara-logback-delegation-{{payara_logback_version|default('1.0.0')}}.jar"
+        mode: '0644'
+        validate_certs: false
+        timeout: 30
+
+    - name: adding files to container
+      ansible.builtin.copy:
+        src: "cache/payara-logback-delegation-{{payara_logback_version|default('1.0.0')}}.jar"
+        dest: "/tmp/payara-logback-delegation.jar"
+        owner: root
+        group: root
+        mode: '0740'
+# -----------------------------------------------
   - name: PAYARA INSTALL
     block:
     - name: downloading payara archive
@@ -161,6 +180,8 @@
         cmd: |
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt start-domain {{payara['domain']}}
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt enable-secure-admin
+          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt deploy --type osgi /tmp/payara-logback-delegation.jar
+          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options "-Dlogback.configurationFile=/tmp/logback.xml"
           for MEMORY_JVM_OPTION in $(/opt/payara/bin/asadmin --user=admin --passwordfile=/opt/payara/secret.txt list-jvm-options | grep "Xm[sx]"); do
             /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt delete-jvm-options ${MEMORY_JVM_OPTION}
           done

@@ -1,6 +1,5 @@
 build {
   name = "5.2021.6-11"
-
   sources = ["source.docker.UBUNTU_BASE_2004"]
 
   # CONFIGURE
