@@ -1,5 +1,8 @@
 # Packer cache
 **/packer_cache/*
+**/binaries/*
 
 # Crash logs
 crash.log
+#*.jar
+#*.rar

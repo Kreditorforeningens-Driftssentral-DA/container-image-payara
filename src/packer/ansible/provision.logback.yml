@@ -23,7 +23,7 @@
       asadmin_password: "{{PAYARA_ASADMIN_PASSWORD|default('Admin123')|string}}"
 
   tasks:
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name: ADD CONTAINER ENTRYPOINT
     block:
     - name: adding entrypoint script
@@ -33,7 +33,7 @@
         owner: root
         group: root
         mode: '0740'
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name: SET TIMEZONE
     block:
     - name: preseeding timezone config (region)
@@ -55,11 +55,11 @@
         name:
         - tzdata
         state: present
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name:
     ansible.builtin.apt:
       update_cache: yes
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name: ADD LOCALE
     block:
     - name: installing laguagepack(s)
@@ -74,7 +74,7 @@
         argv:
         - /usr/sbin/locale-gen
         - "{{locale['name']}}"
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name: PAYARA PRE-INSTALL
     block:
     - name: creating payara system group
@@ -93,7 +93,37 @@
       ansible.builtin.package:
         name: "{{java['version']}}"
         state: present
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
+  - name: PAYARA LOGBACK INSTALLATION
+    block:
+    - name: downloading payara logback files
+      local_action:
+        module: ansible.builtin.get_url
+        url: "https://repo1.maven.org/maven2/io/github/goodees/{{item['name']}}/{{item['version']}}/{{item['name']}}-{{item['version']}}.jar"
+        dest: "cache/{{item['name']}}.jar"
+        mode: '0644'
+        validate_certs: false
+        timeout: 30
+      loop:
+      - name: payara-logback-libs
+        version: "{{payara_logback_version | default('1.0.0')}}"
+      - name: payara-logback-delegation
+        version: "{{payara_logback_version | default('1.0.0')}}"
+      - name: payara-logback-access
+        version: "{{payara_logback_version | default('1.0.0')}}"
+
+    - name: adding files to container
+      ansible.builtin.copy:
+        src: "cache/{{item}}.jar"
+        dest: "/tmp/{{item}}.jar"
+        owner: "{{payara['user']}}"
+        group: "{{payara['group']}}"
+        mode: '0640'
+      loop:
+      - payara-logback-libs
+      - payara-logback-delegation
+      - payara-logback-access
+# -----------------------------------------------
   - name: PAYARA INSTALL
     block:
     - name: downloading payara archive
@@ -122,7 +152,7 @@
         state: absent
       loop:
       - /opt/payara/glassfish/domains/domain1/
-# ----------------------------------------------------------------------------------------------
+# -----------------------------------------------
   - name: CREATE ASADMIN PASSWORD
     block:
     - name: creating temporary asadmin password-file
@@ -133,8 +163,9 @@
         dest: /tmp/secret.txt
         mode: '0640'
 
+    #- ansible.builtin.shell: |
     - name: setting asadmin password
-      ansible.builtin.shell:
+      shell:
         cmd: |
          /opt/payara/bin/asadmin --user admin create-domain --nopassword=true {{payara['domain']}}
          /opt/payara/bin/asadmin --user admin --passwordfile=/tmp/secret.txt change-admin-password --domain_name={{payara['domain']}}
@@ -153,8 +184,13 @@
         dest: /opt/payara/secret.txt
         mode: '0640'
 
+    # Removed: /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options "-Dlogback.configurationFile=/tmp/logback.xml"
+    # /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt add-library --type ext /tmp/payara-logback-libs.jar
+    # /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt deploy --type osgi /tmp/payara-logback-delegation.jar
+    # /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt deploy --type osgi /tmp/payara-logback-access.jar
+    #- ansible.builtin.shell: |
     - name: configuring payara domain
-      ansible.builtin.shell:
+      shell:
         cmd: |
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt start-domain {{payara['domain']}}
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt enable-secure-admin
@@ -162,5 +198,7 @@
             /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt delete-jvm-options ${MEMORY_JVM_OPTION}
           done
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage={{java['max_ram']}}'
+          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt stop-domain --kill=true {{payara['domain']}}
+
 ...

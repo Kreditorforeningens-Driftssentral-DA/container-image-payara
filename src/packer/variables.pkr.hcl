@@ -1,6 +1,6 @@
 variable build_date {
   type    = string
-  default = "2000.1"
+  default = "1970.1"
 }
 
 # CONTAINER SETTINGS

@@ -4,6 +4,7 @@ export TARGET_SOURCE ?= docker.UBUNTU_BASE_2004
 
 # Packer variables
 export PKR_VAR_docker_image_name ?= local/payara
+export PKR_VAR_build_date 			 ?= 2021.34
 
 build:
 	@packer build -only=${TARGET_BUILD}.${TARGET_SOURCE} -except=push .

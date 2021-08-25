@@ -1,0 +1,24 @@
+# SERVER PROPERTIES
+#set server.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size=512
+#set server.thread-pools.thread-pool.thread-pool-1.max-thread-pool-size=512
+#set server.network-config.protocols.protocol.http-listener-1.http.max-connections=1000
+#set server.network-config.protocols.protocol.http-listener-1.http.timeout-seconds=120
+#set server.network-config.protocols.protocol.http-listener-1.http.scheme-mapping=X-Forwarded-Proto
+#set server.network-config.transports.transport.tcp.acceptor-threads=2
+#set server.network-config.protocols.protocol.admin-listener.http.scheme-mapping=X-Forwarded-Proto
+
+# LOGGING ATTRIBUTES: https://docs.payara.fish/enterprise/docs/documentation/payara-server/logging/logging.html
+set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile='true'
+set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'
+set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=5000000
+set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation='true'
+
+# DEPLOY SUPPORTING APPLICATIONS
+deploy --type osgi /tmp/payara-logback-delegation.jar
+deploy --forcename --name activemq-rar --type rar /tmp/activemq-rar.rar
+
+# CONFIGURE ACTIVEMQ ADAPTER
+create-resource-adapter-config --property ServerUrl="tcp\://activemq\:61616":UserName="system":Password="manager" activemq-rar
+create-connector-connection-pool --raname activemq-rar --connectiondefinition javax.jms.ConnectionFactory --ping true --isconnectvalidatereq true jms/KosMQPool
+create-connector-resource --poolname jms/KosMQPool jms/KosConnectionFactory
+create-admin-object --raname activemq-rar --restype javax.jms.Queue --property PhysicalName=PDFInvoice jms/PDFInvoice

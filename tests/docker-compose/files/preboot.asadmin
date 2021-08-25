@@ -1,0 +1,19 @@
+# SET JVM OPTIONS
+#create-jvm-options '-Dfile.encoding=ISO-8859-1:-Duser.language=nb:-Duser.country=NO'
+create-jvm-options --target=server-config "\-Dlogback.configurationFile=/tmp/logback.xml"
+
+# CUSTOM LIBRARIES: common | ext | app
+add-library --type common /tmp/payara-logback-libs.jar
+add-library --type common /tmp/logstash-logback-encoder.jar
+add-library --type common /tmp/postgresql.jar
+add-library --type common /tmp/mssql-jdbc.jre11.jar
+
+# SERVER PROPERTIES
+set server.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size=512
+set server.thread-pools.thread-pool.thread-pool-1.max-thread-pool-size=512
+set server.network-config.protocols.protocol.http-listener-1.http.max-connections=1000
+set server.network-config.protocols.protocol.http-listener-1.http.timeout-seconds=60
+set server.network-config.protocols.protocol.http-listener-1.http.scheme-mapping=X-Forwarded-Proto
+set server.network-config.transports.transport.tcp.acceptor-threads=2
+#set server.network-config.protocols.protocol.admin-listener.http.scheme-mapping=X-Forwarded-Proto
+#set-log-attributes "handlers=org.slf4j.bridge.SLF4JBridgeHandler"
