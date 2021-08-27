@@ -3,9 +3,7 @@
   hosts: default
   become: true
   gather_facts: false
-# ----------------------------------------------------------------------------------------------
-# DEFINE VARIABLES PASSED FROM PACKER TO ANSIBLE
-# ----------------------------------------------------------------------------------------------
+
   vars:
     timezone:
       continent: "{{TIMEZONE_CONTINENT|default('Europe')|string}}"
@@ -26,8 +24,6 @@
 
   tasks:
 # ----------------------------------------------------------------------------------------------
-# COPY ENTRYPOINT SCRIPT TO CONTAINER
-# ----------------------------------------------------------------------------------------------
   - name: ADD CONTAINER ENTRYPOINT
     block:
     - name: adding entrypoint script
@@ -37,8 +33,6 @@
         owner: root
         group: root
         mode: '0740'
-# ----------------------------------------------------------------------------------------------
-# SET TIMEZONE TARGET
 # ----------------------------------------------------------------------------------------------
   - name: SET TIMEZONE
     block:
@@ -62,12 +56,10 @@
         - tzdata
         state: present
 # ----------------------------------------------------------------------------------------------
-# INSTALL LOCALE AND LANGUAGES
-# ----------------------------------------------------------------------------------------------
   - name:
     ansible.builtin.apt:
       update_cache: yes
-
+# ----------------------------------------------------------------------------------------------
   - name: ADD LOCALE
     block:
     - name: installing laguagepack(s)
@@ -83,8 +75,6 @@
         - /usr/sbin/locale-gen
         - "{{locale['name']}}"
 # ----------------------------------------------------------------------------------------------
-# - CREATE PAYARA USER AND GROUP
-# ----------------------------------------------------------------------------------------------
   - name: PAYARA PRE-INSTALL
     block:
     - name: creating payara system group
@@ -98,15 +88,11 @@
         group: "{{payara['group']}}"
         comment: Payara Server System Account
         system: true
-# ----------------------------------------------------------------------------------------------
-# - INSTALL JAVA RUNTIME
-# ----------------------------------------------------------------------------------------------
+
     - name: installing java runtime
       ansible.builtin.package:
         name: "{{java['version']}}"
         state: present
-# ----------------------------------------------------------------------------------------------
-# DOWNLOAD AND INSTALL PAYARA
 # ----------------------------------------------------------------------------------------------
   - name: PAYARA INSTALL
     block:
@@ -137,8 +123,6 @@
       loop:
       - /opt/payara/glassfish/domains/domain1/
 # ----------------------------------------------------------------------------------------------
-# CONFIGURE PAYARA INSTANCE
-# ----------------------------------------------------------------------------------------------
   - name: CREATE ASADMIN PASSWORD
     block:
     - name: creating temporary asadmin password-file
@@ -168,8 +152,7 @@
           AS_ADMIN_PASSWORD={{payara['asadmin_password']}}
         dest: /opt/payara/secret.txt
         mode: '0640'
-    
-    # NOTE: Required to set logback configuration-file before domain start..
+
     - name: configuring payara domain
       ansible.builtin.shell:
         cmd: |
@@ -179,6 +162,5 @@
             /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt delete-jvm-options ${MEMORY_JVM_OPTION}
           done
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage={{java['max_ram']}}'
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options "\-Dlogback.configurationFile=/tmp/logback.xml"
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt stop-domain --kill=true {{payara['domain']}}
 ...

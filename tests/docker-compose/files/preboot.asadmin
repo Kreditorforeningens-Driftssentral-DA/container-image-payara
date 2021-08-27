@@ -1,8 +1,9 @@
 # SET JVM OPTIONS
 #create-jvm-options '-Dfile.encoding=ISO-8859-1:-Duser.language=nb:-Duser.country=NO'
-create-jvm-options --target=server-config "\-Dlogback.configurationFile=/tmp/logback.xml"
+#create-jvm-options "\-Dlogback.configurationFile=/tmp/logback.xml
 
 # CUSTOM LIBRARIES: common | ext | app
+# NOTE: Binariesnot part of container image
 add-library --type common /tmp/payara-logback-libs.jar
 add-library --type common /tmp/logstash-logback-encoder.jar
 add-library --type common /tmp/postgresql.jar
@@ -16,4 +17,3 @@ set server.network-config.protocols.protocol.http-listener-1.http.timeout-second
 set server.network-config.protocols.protocol.http-listener-1.http.scheme-mapping=X-Forwarded-Proto
 set server.network-config.transports.transport.tcp.acceptor-threads=2
 #set server.network-config.protocols.protocol.admin-listener.http.scheme-mapping=X-Forwarded-Proto
-#set-log-attributes "handlers=org.slf4j.bridge.SLF4JBridgeHandler"

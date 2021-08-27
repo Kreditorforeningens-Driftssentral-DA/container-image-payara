@@ -35,6 +35,7 @@ services:
     - "traefik.http.routers.activemq0.service=activemq0"
     - "traefik.http.services.activemq0.loadbalancer.server.port=8161"
     - "traefik.http.services.activemq0.loadbalancer.server.scheme=http"
+
   payara:
     image: local/payara:latest
     environment:
@@ -61,4 +62,5 @@ services:
     - "./files/binaries/logstash-logback-encoder.jar:/tmp/logstash-logback-encoder.jar:ro"
     - "./files/binaries/mssql-jdbc.jre11.jar:/tmp/mssql-jdbc.jre11.jar:ro"
     - "./files/binaries/postgresql.jar:/tmp/postgresql.jar:ro"
+    - "./files/binaries/java-web-project.war:/tmp/java-web-project.war:ro"
 ...
