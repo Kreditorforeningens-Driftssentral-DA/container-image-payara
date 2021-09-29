@@ -1,11 +1,13 @@
 ---
-- name: PROVISION PAYARA CONTAINER
+- name: PROVISION PAYARA
   hosts: default
   become: true
   gather_facts: false
+
 # ----------------------------------------------------------------------------------------------
-# DEFINE VARIABLES PASSED FROM PACKER TO ANSIBLE
+# VARIABLES (PASSED FROM PACKER TO ANSIBLE VIA EXTRA-VARS)
 # ----------------------------------------------------------------------------------------------
+
   vars:
     timezone:
       continent: "{{TIMEZONE_CONTINENT|default('Europe')|string}}"
@@ -25,10 +27,12 @@
       asadmin_password: "{{PAYARA_ASADMIN_PASSWORD|default('Admin123')|string}}"
 
   tasks:
+
 # ----------------------------------------------------------------------------------------------
-# COPY ENTRYPOINT SCRIPT TO CONTAINER
+# UPLOAD ENTRYPOINT SCRIPT TO CONTAINER
 # ----------------------------------------------------------------------------------------------
-  - name: ADD CONTAINER ENTRYPOINT
+
+  - name: UPLOAD | add entrypoint-script
     block:
     - name: adding entrypoint script
       ansible.builtin.copy:
@@ -37,38 +41,42 @@
         owner: root
         group: root
         mode: '0740'
+
 # ----------------------------------------------------------------------------------------------
-# SET TIMEZONE TARGET
+# TIMEZONE
 # ----------------------------------------------------------------------------------------------
-  - name: SET TIMEZONE
+
+  - name: TIMEZONE
     block:
-    - name: preseeding timezone config (region)
+    - name: TIMEZONE | preseed area config (region)
       ansible.builtin.debconf:
         name: tzdata
         question: tzdata/Areas
         value: "{{timezone['continent']}}"
         vtype: select
 
-    - name: preseeding timezone config (city)
+    - name: TIMEZONE | preseed zone config (city)
       ansible.builtin.debconf:
         name: tzdata
         question: "tzdata/Zones/{{timezone['continent']}}"
         value: "{{timezone['city']}}"
         vtype: select
 
-    - name: installing timezone package(s)
+    - name: TIMEZONE | install
       ansible.builtin.package:
         name:
         - tzdata
         state: present
+
 # ----------------------------------------------------------------------------------------------
-# INSTALL LOCALE AND LANGUAGES
+# LOCALE AND LANGUAGES
 # ----------------------------------------------------------------------------------------------
+
   - name:
     ansible.builtin.apt:
       update_cache: yes
 
-  - name: ADD LOCALE
+  - name: LOCALE | add languagepacks
     block:
     - name: installing laguagepack(s)
       ansible.builtin.package:
@@ -77,40 +85,46 @@
         - locales
         state: present
 
-    - name: generating locale files
+    - name: LOCALE | generate files
       ansible.builtin.command:
         argv:
         - /usr/sbin/locale-gen
         - "{{locale['name']}}"
+
 # ----------------------------------------------------------------------------------------------
-# - CREATE PAYARA USER AND GROUP
+# PAYARA USER AND GROUP
 # ----------------------------------------------------------------------------------------------
-  - name: PAYARA PRE-INSTALL
+
+  - name: USERS
     block:
-    - name: creating payara system group
+    - name: USERS | create system group
       ansible.builtin.group:
         name: "{{payara['group']}}"
         system: true
 
-    - name: creating payara system user
+    - name: USERS | create system user
       ansible.builtin.user:
         name: "{{payara['user']}}"
         group: "{{payara['group']}}"
         comment: Payara Server System Account
         system: true
+
 # ----------------------------------------------------------------------------------------------
-# - INSTALL JAVA RUNTIME
+# INSTALL JAVA
 # ----------------------------------------------------------------------------------------------
-    - name: installing java runtime
+
+    - name: JAVA | install runtime
       ansible.builtin.package:
         name: "{{java['version']}}"
         state: present
+
 # ----------------------------------------------------------------------------------------------
-# DOWNLOAD AND INSTALL PAYARA
+# INSTALL PAYARA
 # ----------------------------------------------------------------------------------------------
-  - name: PAYARA INSTALL
+
+  - name: PAYARA
     block:
-    - name: downloading payara archive
+    - name: PAYARA | download archive
       local_action:
         module: ansible.builtin.get_url
         url: "https://repo1.maven.org/maven2/fish/payara/distributions/payara/{{payara['version_major']}}.{{payara['version_minor']}}/payara-{{payara['version_major']}}.{{payara['version_minor']}}.zip"
@@ -119,29 +133,31 @@
         validate_certs: false
         timeout: 30
 
-    - name: extracting payara archive into container
+    - name: PAYARA | upload/extract archive into container
       ansible.builtin.unarchive:
         src: "cache/payara-{{payara['version_major']}}.{{payara['version_minor']}}.zip"
         dest: /opt
 
-    - name: symlinking payara folder
+    - name: PAYARA | symlink folder(s)
       ansible.builtin.file:
         src: /opt/payara{{payara['version_major']}}
         dest: /opt/payara
         state: link
 
-    - name: removing unwanted files
+    - name: PAYARA | cleanup
       ansible.builtin.file:
         path: "{{item}}"
         state: absent
       loop:
       - /opt/payara/glassfish/domains/domain1/
+
 # ----------------------------------------------------------------------------------------------
-# CONFIGURE PAYARA INSTANCE
+# CONFIGURE PAYARA
 # ----------------------------------------------------------------------------------------------
-  - name: CREATE ASADMIN PASSWORD
+
+  - name: ASADMIN
     block:
-    - name: creating temporary asadmin password-file
+    - name: ASADMIN | create temporary asadmin password-file
       ansible.builtin.copy:
         content: |
           AS_ADMIN_PASSWORD=
@@ -149,28 +165,28 @@
         dest: /tmp/secret.txt
         mode: '0640'
 
-    - name: setting asadmin password
+    - name: ASADMIN | set password
       ansible.builtin.shell:
         cmd: |
          /opt/payara/bin/asadmin --user admin create-domain --nopassword=true {{payara['domain']}}
          /opt/payara/bin/asadmin --user admin --passwordfile=/tmp/secret.txt change-admin-password --domain_name={{payara['domain']}}
 
-    - name: removing temporary asadmin password-file
+    - name: ASADMIN | remove temporary password-file
       ansible.builtin.file:
         path: /tmp/secret.txt
         state: absent
 
-  - name: CONFIGURE PAYARA
+  - name: CONFIG
     block:
-    - name: creating asadmin password-file
+    - name: CONFIG | create password-file
       ansible.builtin.copy:
         content: |
           AS_ADMIN_PASSWORD={{payara['asadmin_password']}}
         dest: /opt/payara/secret.txt
         mode: '0640'
     
-    # NOTE: Required to set logback configuration-file before domain start..
-    - name: configuring payara domain
+    # NOTE: It's required to set logback configuration-file before domain start.
+    - name: CONFIG | configure domain
       ansible.builtin.shell:
         cmd: |
           /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt start-domain {{payara['domain']}}

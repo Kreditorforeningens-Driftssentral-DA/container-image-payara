@@ -1,35 +1,40 @@
-variable build_date {
-  type    = string
-  default = "1970.1"
-}
+# =================================================================================================
+# BUILD VARIABLES
+# =================================================================================================
 
-# CONTAINER SETTINGS
-variable docker_image_name {
+# -------------------------------------------------------------------------------------------------
+# CONTAINER REGISTRY
+# -------------------------------------------------------------------------------------------------
+
+variable container_image_name {
   type    = string
   default = "local/payara"
 }
 
-variable docker_image_tags {
+variable container_image_tags {
   type    = list(string)
-  default = ["dev"]
+  default = []
 }
 
-variable docker_login_username {
+variable container_registry_username {
   type    = string
   default = "username"
 }
 
-variable docker_login_server {
+variable container_registry_server {
   type    = string
   default = "https://127.0.0.1:5000"
 }
 
-variable docker_login_password {
+variable container_registry_password {
   type    = string
   default = "secret"
 }
 
+# -------------------------------------------------------------------------------------------------
 # ANSIBLE PLAYBOOK VARIABLES
+# -------------------------------------------------------------------------------------------------
+
 variable timezone_continent {
   type    = string
   default = "Europe"
@@ -72,7 +77,7 @@ variable payara_version_major {
 
 variable payara_version_minor {
   type    = string
-  default = "2021.6"
+  default = "2021.7"
 }
 
 variable payara_user {

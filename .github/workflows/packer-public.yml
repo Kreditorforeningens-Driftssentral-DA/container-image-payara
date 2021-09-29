@@ -8,7 +8,7 @@ on:
   - cron: '30 0 * * 5' # https://crontab.guru/
 
 jobs:
-  v5-2021-6_11:
+  PAYARA-5:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,24 +16,26 @@ jobs:
       id: tag
       shell: bash
       run: echo "::set-output name=week::$(date +'%Y.%V')"
-    - name: Build & push public image
+    - name: UBUNTU | Build & push public image
       shell: bash
       env:
-        TARGET_BUILD: '5.2021.6-11'
-        TARGET_SOURCE: docker.UBUNTU_BASE_2004
-        PKR_VAR_build_date: "${{ steps.tag.outputs.week }}"
-        PKR_VAR_docker_image_name: "registry.hub.docker.com/kdsda/payara"
-        PKR_VAR_docker_login_server: "registry.hub.docker.com"
-        PKR_VAR_docker_login_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
-        PKR_VAR_docker_login_password: "${{ secrets.DOCKER_HUB_SECRET }}"
+        BUILD: '5.2021.7'
+        SOURCE: docker.UBUNTU
+        PKR_VAR_container_image_tags: "[\"${{ steps.tag.outputs.week }}\",\"5.2021.7-latest\"]"
+        PKR_VAR_container_image_name: "registry.hub.docker.com/kdsda/payara"
+        PKR_VAR_payara_version_major: 5
+        PKR_VAR_payara_version_minor: '2021.7'
+        PKR_VAR_java_version: openjdk-11-jre-headless
+        PKR_VAR_container_registry_server: "registry.hub.docker.com"
+        PKR_VAR_container_registry_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+        PKR_VAR_container_registry_password: "${{ secrets.DOCKER_HUB_SECRET }}"
       run: |
-        # [INFO] BUILD & PUSH IMAGE TO DOCKER HUB
-        set -e
+        # [INFO] BUILD & PUSH IMAGE (PUBLIC REGISTRY)
+        set -eu
         packer version
         docker --version
         ansible --version | head -n 1
-        pushd src/packer
-        packer validate -only=${TARGET_BUILD}.${TARGET_SOURCE} .
-        packer fmt -diff -write=false .
-        packer build -only=${TARGET_BUILD}.${TARGET_SOURCE} .
-        popd
+        packer validate -only=${BUILD}.${SOURCE} ./packer
+        packer fmt -diff -write=false ./packer
+        packer build -only=${BUILD}.${SOURCE} ./packer
+...
