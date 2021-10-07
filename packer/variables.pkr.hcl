@@ -63,9 +63,19 @@ variable locale_package {
 }
 */
 
+variable java_platform {
+  type    = string
+  default = "openjdk"
+}
+
 variable java_version {
   type    = string
-  default = "openjdk-11-jre-headless"
+  default = "11"
+}
+
+variable java_edition {
+  type    = string
+  default = "jre-headless"
 }
 
 variable java_max_ram {

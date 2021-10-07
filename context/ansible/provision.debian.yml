@@ -13,7 +13,6 @@
       continent: "{{TIMEZONE_CONTINENT|default('Europe')|string}}"
       city: "{{TIMEZONE_CITY|default('Oslo')|string}}"
     java:
-      version: "{{JAVA_VERSION|default('openjdk-11-jre-headless'|string)}}"
       max_ram: "{{JAVA_MAX_RAM|default('85.0')|string}}"
     payara:
       user: "{{PAYARA_USER|default('payara')|string}}"
@@ -121,15 +120,6 @@
       ansible.builtin.command:
         argv:
         - /usr/sbin/locale-gen
-
-# ----------------------------------------------------------------------------------------------
-# INSTALL JAVA
-# ----------------------------------------------------------------------------------------------
-
-    - name: JAVA | install runtime
-      ansible.builtin.package:
-        name: "{{java.version}}"
-        state: present
 
 # ----------------------------------------------------------------------------------------------
 # INSTALL PAYARA

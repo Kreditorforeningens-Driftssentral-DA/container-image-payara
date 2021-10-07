@@ -1,14 +1,15 @@
 # =================================================================================================
-# BUILD CUSTOMIZATION
+# BUILD CUSTOMIZATION | https://www.packer.io/docs/templates/hcl_templates/contextual-variables
+# Uses 'external' ansible for provisioning
 # =================================================================================================
-#https://www.packer.io/docs/templates/hcl_templates/contextual-variables
-
 locals {
   timezone_continent = var.timezone_continent
   timezone_city      = var.timezone_city
 
-  java_version = var.java_version
-  java_max_ram = var.java_max_ram
+  java_platform = var.java_platform
+  java_version  = var.java_version
+  java_edition  = var.java_edition
+  java_max_ram  = var.java_max_ram
 
   payara_version_major    = var.payara_version_major
   payara_version_minor    = var.payara_version_minor
@@ -53,13 +54,14 @@ build {
   sources = [
     "source.docker.DEBIAN",
     "source.docker.UBUNTU",
+    "source.docker.ALPINE",
   ]
 
   # -------------------------------------------------------------------------------------------------
   # PRE-PROVISION
   # -------------------------------------------------------------------------------------------------
 
-  # APT-distributions (Debian)
+  # APT (Debian)
   provisioner "shell" {
     only = [
       "docker.DEBIAN",
@@ -71,11 +73,35 @@ build {
       echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
       apt-get update
       apt-get -qqy install --no-install-recommends apt-utils > /dev/null 2>&1 
-      apt-get -qqy install --no-install-recommends python3-simplejson python3-apt jq unzip tar curl gnupg2
+      apt-get -qqy install --no-install-recommends tar unzip curl jq gnupg2
+      apt-get -qqy install --no-install-recommends python3-simplejson python3-apt
+      apt-get -qqy install --no-install-recommends ${local.java_platform}-${local.java_version}-${local.java_edition}
       apt-get autoclean
       PREPROVISIONING
     ]
   }
+
+  # APK (Alpine)
+  provisioner "shell" {
+    only = [
+      "docker.ALPINE",
+    ]
+
+    inline = [
+      <<-PREPROVISION
+      apk add --no-cache tar unzip curl
+      apk add --no-cache tar python3 py3-pip py3-cryptography py3-yaml py3-paramiko py3-lxml
+      apk add --no-cache ${local.java_platform}${local.java_version}-${local.java_edition}
+      PREPROVISION
+    ]
+  }
+
+  # Add Ansible community.general: ~12MB
+  #provisioner "shell" {
+  #  inline = [
+  #    "ansible-galaxy collection install community.general",
+  #  ]
+  #}
 
   # -------------------------------------------------------------------------------------------------
   # PROVISION
@@ -87,7 +113,7 @@ build {
       "docker.UBUNTU",
     ]
 
-    user          = "root"
+    user = "root"
     playbook_file = "./context/ansible/provision.debian.yml"
     extra_arguments = [
       "--extra-vars",
@@ -95,7 +121,6 @@ build {
         "\"",
         "TIMEZONE_CONTINENT=${local.timezone_continent}",
         "TIMEZONE_CITY=${local.timezone_city}",
-        "JAVA_VERSION=${local.java_version}",
         "JAVA_MAX_RAM=${local.java_max_ram}",
         "PAYARA_USER=${local.payara_user}",
         "PAYARA_HOME=${local.payara_home}",
@@ -123,7 +148,7 @@ build {
       ]
 
       repository = local.container_registry_name
-      tag        = lower("payara-${build.ID}")
+      tag = lower("payara-${build.ID}")
 
       changes = [
         "EXPOSE 4848 8080 8181 9009",
@@ -157,8 +182,6 @@ build {
         "debian",
         "debian-latest",
         "debian-${local.payara_version_major}.${local.payara_version_minor}",
-        "debian-${uuidv5("oid", "${local.payara_version_major}.${local.payara_version_minor}")}",
-        "debian-${formatdate("YYYY-MM-DD", timestamp())}",
       ])
     }
 
@@ -172,8 +195,6 @@ build {
         "latest",
         "ubuntu",
         "${local.payara_version_major}.${local.payara_version_minor}",
-        uuidv5("oid", "${local.payara_version_major}.${local.payara_version_minor}"),
-        formatdate("YYYY-MM-DD", timestamp()),
       ])
     }
 
