@@ -22,7 +22,9 @@ jobs:
       shell: bash
       env:
         FILTER: "*.UBUNTU"
-        PKR_VAR_java_version: "openjdk-11-jre-headless"
+        PKR_VAR_java_platform: openjdk
+        PKR_VAR_java_version: "11"
+        PKR_VAR_java_edition: jre-headless
         PKR_VAR_payara_version_major: "5"
         PKR_VAR_payara_version_minor: "2021.7"
         PKR_VAR_container_extra_tags: "[\"${{ steps.tag.outputs.week }}\"]"
