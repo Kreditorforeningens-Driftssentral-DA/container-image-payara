@@ -90,18 +90,11 @@ build {
     inline = [
       <<-PREPROVISION
       apk add --no-cache tar unzip curl
-      apk add --no-cache tar python3 py3-pip py3-cryptography py3-yaml py3-paramiko py3-lxml
+      apk add --no-cache tar python3
       apk add --no-cache ${local.java_platform}${local.java_version}-${local.java_edition}
       PREPROVISION
     ]
   }
-
-  # Add Ansible community.general: ~12MB
-  #provisioner "shell" {
-  #  inline = [
-  #    "ansible-galaxy collection install community.general",
-  #  ]
-  #}
 
   # -------------------------------------------------------------------------------------------------
   # PROVISION
