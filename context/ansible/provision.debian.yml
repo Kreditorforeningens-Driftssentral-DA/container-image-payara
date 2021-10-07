@@ -12,21 +12,42 @@
     timezone:
       continent: "{{TIMEZONE_CONTINENT|default('Europe')|string}}"
       city: "{{TIMEZONE_CITY|default('Oslo')|string}}"
-    locale:
-      name: "{{LOCALE_NAME|default('nb_NO ISO-8859-1')|string}}"
-      language_pack: "{{LOCALE_LANGUAGE_PACKAGE|default('language-pack-nb')|string}}"
     java:
       version: "{{JAVA_VERSION|default('openjdk-11-jre-headless'|string)}}"
-      max_ram: "{{JAVA_MAX_RAM|default('85')|string}}"
+      max_ram: "{{JAVA_MAX_RAM|default('85.0')|string}}"
     payara:
-      group: "{{PAYARA_GROUP|default('payara')|string}}"
       user: "{{PAYARA_USER|default('payara')|string}}"
+      home: "{{PAYARA_HOME|default('/opt/payara')|string}}"
       version_major: "{{PAYARA_VERSION_MAJOR|default('5')|string}}"
-      version_minor: "{{PAYARA_VERSION_MINOR|default('2020.7')|string}}"
+      version_minor: "{{PAYARA_VERSION_MINOR|default('2021.7')|string}}"
       domain: "{{PAYARA_DOMAIN|default('production')|string}}"
       asadmin_password: "{{PAYARA_ASADMIN_PASSWORD|default('Admin123')|string}}"
 
   tasks:
+  
+  - name:
+    ansible.builtin.apt:
+      update_cache: yes
+
+# ----------------------------------------------------------------------------------------------
+# CREATE USER & GROUP
+# ----------------------------------------------------------------------------------------------
+
+  - name: Create Group
+    ansible.builtin.group:
+      name: "{{payara.user}}"
+      state: present
+      gid: 1250
+
+  - name: Create User
+    ansible.builtin.user:
+      name: "{{payara.user}}"
+      group: "{{payara.user}}"
+      home: "{{payara.home}}"
+      comment: "Payara service user"
+      create_home: false
+      state: present
+      uid: 1250
 
 # ----------------------------------------------------------------------------------------------
 # UPLOAD ENTRYPOINT SCRIPT TO CONTAINER
@@ -36,11 +57,18 @@
     block:
     - name: adding entrypoint script
       ansible.builtin.copy:
-        src: files/docker-entrypoint.sh
+        src: files/docker-entrypoint.debian.sh
         dest: /docker-entrypoint.sh
-        owner: root
-        group: root
+        owner: "{{payara.user}}"
+        group: "{{payara.user}}"
         mode: '0740'
+
+    - name: installing requried entrypoint packages
+      ansible.builtin.package:
+        name:
+        - gosu
+        - tini
+        state: latest
 
 # ----------------------------------------------------------------------------------------------
 # TIMEZONE
@@ -52,14 +80,14 @@
       ansible.builtin.debconf:
         name: tzdata
         question: tzdata/Areas
-        value: "{{timezone['continent']}}"
+        value: "{{timezone.continent}}"
         vtype: select
 
     - name: TIMEZONE | preseed zone config (city)
       ansible.builtin.debconf:
         name: tzdata
-        question: "tzdata/Zones/{{timezone['continent']}}"
-        value: "{{timezone['city']}}"
+        question: "tzdata/Zones/{{timezone.continent}}"
+        value: "{{timezone.city}}"
         vtype: select
 
     - name: TIMEZONE | install
@@ -72,42 +100,27 @@
 # LOCALE AND LANGUAGES
 # ----------------------------------------------------------------------------------------------
 
-  - name:
-    ansible.builtin.apt:
-      update_cache: yes
-
   - name: LOCALE | add languagepacks
     block:
     - name: installing laguagepack(s)
       ansible.builtin.package:
         name:
-        - "{{locale['language_pack']}}"
         - locales
         state: present
 
-    - name: LOCALE | generate files
+    - name: LOCALE | enable locales
+      ansible.builtin.replace:
+        path: /etc/locale.gen
+        regexp: '^# ({{item}}.*)$'
+        replace: '\1'
+      loop:
+      - nb_NO
+      - en_US
+
+    - name: LOCALE | generate locales
       ansible.builtin.command:
         argv:
         - /usr/sbin/locale-gen
-        - "{{locale['name']}}"
-
-# ----------------------------------------------------------------------------------------------
-# PAYARA USER AND GROUP
-# ----------------------------------------------------------------------------------------------
-
-  - name: USERS
-    block:
-    - name: USERS | create system group
-      ansible.builtin.group:
-        name: "{{payara['group']}}"
-        system: true
-
-    - name: USERS | create system user
-      ansible.builtin.user:
-        name: "{{payara['user']}}"
-        group: "{{payara['group']}}"
-        comment: Payara Server System Account
-        system: true
 
 # ----------------------------------------------------------------------------------------------
 # INSTALL JAVA
@@ -115,7 +128,7 @@
 
     - name: JAVA | install runtime
       ansible.builtin.package:
-        name: "{{java['version']}}"
+        name: "{{java.version}}"
         state: present
 
 # ----------------------------------------------------------------------------------------------
@@ -127,21 +140,23 @@
     - name: PAYARA | download archive
       local_action:
         module: ansible.builtin.get_url
-        url: "https://repo1.maven.org/maven2/fish/payara/distributions/payara/{{payara['version_major']}}.{{payara['version_minor']}}/payara-{{payara['version_major']}}.{{payara['version_minor']}}.zip"
-        dest: "cache/payara-{{payara['version_major']}}.{{payara['version_minor']}}.zip"
+        url: "https://repo1.maven.org/maven2/fish/payara/distributions/payara/{{payara.version_major}}.{{payara.version_minor}}/payara-{{payara.version_major}}.{{payara.version_minor}}.zip"
+        dest: "cache/payara-{{payara.version_major}}.{{payara.version_minor}}.zip"
         mode: '0644'
         validate_certs: false
         timeout: 30
 
     - name: PAYARA | upload/extract archive into container
       ansible.builtin.unarchive:
-        src: "cache/payara-{{payara['version_major']}}.{{payara['version_minor']}}.zip"
+        src: "cache/payara-{{payara.version_major}}.{{payara.version_minor}}.zip"
         dest: /opt
 
     - name: PAYARA | symlink folder(s)
       ansible.builtin.file:
-        src: /opt/payara{{payara['version_major']}}
-        dest: /opt/payara
+        src: "/opt/payara{{payara.version_major}}"
+        dest: "{{payara.home}}"
+        owner: "{{payara.user}}"
+        group: "{{payara.user}}"
         state: link
 
     - name: PAYARA | cleanup
@@ -149,7 +164,7 @@
         path: "{{item}}"
         state: absent
       loop:
-      - /opt/payara/glassfish/domains/domain1/
+      - "{{payara.home}}/glassfish/domains/domain1/"
 
 # ----------------------------------------------------------------------------------------------
 # CONFIGURE PAYARA
@@ -161,15 +176,15 @@
       ansible.builtin.copy:
         content: |
           AS_ADMIN_PASSWORD=
-          AS_ADMIN_NEWPASSWORD={{payara['asadmin_password']}}
+          AS_ADMIN_NEWPASSWORD={{payara.asadmin_password}}
         dest: /tmp/secret.txt
         mode: '0640'
 
     - name: ASADMIN | set password
       ansible.builtin.shell:
         cmd: |
-         /opt/payara/bin/asadmin --user admin create-domain --nopassword=true {{payara['domain']}}
-         /opt/payara/bin/asadmin --user admin --passwordfile=/tmp/secret.txt change-admin-password --domain_name={{payara['domain']}}
+         {{payara.home}}/bin/asadmin --user admin create-domain --nopassword=true {{payara.domain}}
+         {{payara.home}}/bin/asadmin --user admin --passwordfile=/tmp/secret.txt change-admin-password --domain_name={{payara.domain}}
 
     - name: ASADMIN | remove temporary password-file
       ansible.builtin.file:
@@ -181,20 +196,30 @@
     - name: CONFIG | create password-file
       ansible.builtin.copy:
         content: |
-          AS_ADMIN_PASSWORD={{payara['asadmin_password']}}
+          AS_ADMIN_PASSWORD={{payara.asadmin_password}}
         dest: /opt/payara/secret.txt
         mode: '0640'
     
     # NOTE: It's required to set logback configuration-file before domain start.
+    # REMOVED (not picket up..): /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=75.0'
     - name: CONFIG | configure domain
       ansible.builtin.shell:
         cmd: |
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt start-domain {{payara['domain']}}
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt enable-secure-admin
-          for MEMORY_JVM_OPTION in $(/opt/payara/bin/asadmin --user=admin --passwordfile=/opt/payara/secret.txt list-jvm-options | grep "Xm[sx]"); do
-            /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt delete-jvm-options ${MEMORY_JVM_OPTION}
+          {{payara.home}}/bin/asadmin --user admin --passwordfile={{payara.home}}/secret.txt start-domain {{payara.domain}}
+          {{payara.home}}/bin/asadmin --user admin --passwordfile={{payara.home}}/secret.txt enable-secure-admin
+          for MEMORY_JVM_OPTION in $({{payara.home}}/bin/asadmin --user=admin --passwordfile={{payara.home}}/secret.txt list-jvm-options | grep "Xm[sx]"); do
+            {{payara.home}}/bin/asadmin --user admin --passwordfile={{payara.home}}/secret.txt delete-jvm-options ${MEMORY_JVM_OPTION}
           done
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage={{java['max_ram']}}'
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt create-jvm-options "\-Dlogback.configurationFile=/tmp/logback.xml"
-          /opt/payara/bin/asadmin --user admin --passwordfile=/opt/payara/secret.txt stop-domain --kill=true {{payara['domain']}}
+          {{payara.home}}/bin/asadmin --user admin --passwordfile={{payara.home}}/secret.txt create-jvm-options "\-Dlogback.configurationFile=/tmp/logback.xml"
+          {{payara.home}}/bin/asadmin --user admin --passwordfile={{payara.home}}/secret.txt stop-domain --kill=true {{payara.domain}}
+
+# ----------------------------------------------------------------------------------------------
+# CLEANUP
+# ----------------------------------------------------------------------------------------------
+
+  - name: Cleanup apt-cache
+    ansible.builtin.command:
+      cmd: apt-get clean
+      warn: false
+
 ...

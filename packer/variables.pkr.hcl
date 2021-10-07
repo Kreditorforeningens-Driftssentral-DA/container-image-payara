@@ -6,19 +6,14 @@
 # CONTAINER REGISTRY
 # -------------------------------------------------------------------------------------------------
 
-variable container_image_name {
-  type    = string
-  default = "local/payara"
-}
-
-variable container_image_tags {
+variable container_extra_tags {
   type    = list(string)
   default = []
 }
 
-variable container_registry_username {
+variable container_registry_name {
   type    = string
-  default = "username"
+  default = "local/payara"
 }
 
 variable container_registry_server {
@@ -26,9 +21,14 @@ variable container_registry_server {
   default = "https://127.0.0.1:5000"
 }
 
+variable container_registry_username {
+  type    = string
+  default = "anon"
+}
+
 variable container_registry_password {
   type    = string
-  default = "secret"
+  default = ""
 }
 
 # -------------------------------------------------------------------------------------------------
@@ -45,6 +45,7 @@ variable timezone_city {
   default = "Oslo"
 }
 
+/*
 variable locale_name {
   type    = string
   default = "nb_NO ISO-8859-1"
@@ -55,10 +56,12 @@ variable locale_env {
   default = "nb_NO.ISO-8859-1"
 }
 
+
 variable locale_package {
   type    = string
   default = "language-pack-nb"
 }
+*/
 
 variable java_version {
   type    = string
@@ -67,7 +70,7 @@ variable java_version {
 
 variable java_max_ram {
   type    = string
-  default = "85"
+  default = "80"
 }
 
 variable payara_version_major {
@@ -85,9 +88,9 @@ variable payara_user {
   default = "payara"
 }
 
-variable payara_group {
+variable payara_home {
   type    = string
-  default = "payara"
+  default = "/opt/payara"
 }
 
 variable payara_domain {

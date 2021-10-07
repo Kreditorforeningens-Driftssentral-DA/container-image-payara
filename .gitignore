@@ -1,10 +1,15 @@
-# Packer cache
+# FOLDERS
 **/packer_cache/*
 **/binaries/*
 **/tests/*
-# Crash logs
-crash.log
-#*.jar
-#*.rar
 
-**/__*
+# FILES
+*.jar
+*.rar
+*.zip
+*.tar
+*.tar.gz
+__*
+
+# KEEP
+!.gitignore

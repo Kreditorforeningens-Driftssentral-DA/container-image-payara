@@ -12,53 +12,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
     - name: Create tag from current year/week
       id: tag
       shell: bash
       run: echo "::set-output name=week::$(date +'%Y.%V')"
-    - name: UBUNTU | Build & push public image (JRE)
+
+    - name: UBUNTU | Build & push public JRE image
       shell: bash
       env:
-        BUILD: '5.2021.7'
-        SOURCE: docker.UBUNTU
-        PKR_VAR_container_image_tags: "[\"${{ steps.tag.outputs.week }}\",\"5.2021.7-latest\"]"
-        PKR_VAR_container_image_name: "registry.hub.docker.com/kdsda/payara"
-        PKR_VAR_payara_version_major: 5
-        PKR_VAR_payara_version_minor: '2021.7'
-        PKR_VAR_java_version: openjdk-11-jre-headless
+        FILTER: "*.UBUNTU"
+        PKR_VAR_java_version: "openjdk-11-jre-headless"
+        PKR_VAR_payara_version_major: "5"
+        PKR_VAR_payara_version_minor: "2021.7"
+        PKR_VAR_container_extra_tags: "[\"${{ steps.tag.outputs.week }}\"]"
+        PKR_VAR_container_registry_name: "registry.hub.docker.com/kdsda/payara"
         PKR_VAR_container_registry_server: "registry.hub.docker.com"
         PKR_VAR_container_registry_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         PKR_VAR_container_registry_password: "${{ secrets.DOCKER_HUB_SECRET }}"
       run: |
-        # [INFO] BUILD & PUSH JRE IMAGE (PUBLIC REGISTRY)
+        # [UBUNTU] BUILD & PUSH PAYARA
         set -eu
-        packer version
-        docker --version
-        ansible --version | head -n 1
-        packer validate -only=${BUILD}.${SOURCE} ./packer
+        packer validate ./packer
         packer fmt -diff -write=false ./packer
-        packer build -only=${BUILD}.${SOURCE} ./packer
-    
-    - name: UBUNTU | Build & push public image (JDK)
-      shell: bash
-      env:
-        BUILD: '5.2021.7'
-        SOURCE: docker.UBUNTU
-        PKR_VAR_container_image_tags: "[\"${{ steps.tag.outputs.week }}-jdk\",\"5.2021.7-jdk\"]"
-        PKR_VAR_container_image_name: "registry.hub.docker.com/kdsda/payara"
-        PKR_VAR_payara_version_major: 5
-        PKR_VAR_payara_version_minor: '2021.7'
-        PKR_VAR_java_version: openjdk-11-jdk-headless
-        PKR_VAR_container_registry_server: "registry.hub.docker.com"
-        PKR_VAR_container_registry_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
-        PKR_VAR_container_registry_password: "${{ secrets.DOCKER_HUB_SECRET }}"
-      run: |
-        # [INFO] BUILD & PUSH JDK IMAGE (PUBLIC REGISTRY)
-        set -eu
-        packer version
-        docker --version
-        ansible --version | head -n 1
-        packer validate -only=${BUILD}.${SOURCE} ./packer
-        packer fmt -diff -write=false ./packer
-        packer build -only=${BUILD}.${SOURCE} ./packer
+        packer build -only=${FILTER} ./packer
 ...

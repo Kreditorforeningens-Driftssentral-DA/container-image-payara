@@ -38,3 +38,9 @@ docker run --rm -it -p 8080:8080 -p 4848:4848 <image> debug
 > * Cleanup/complete github action pipeline(s)
 > * Publish public image build(s) on dockerhub via pipeline
 > * Create/find acceptable ansible role for the Payara installation
+
+## TESTING
+```bash
+#JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=85.0"
+java -XX:+PrintFlagsFinal -version | grep -E "UseContainerSupport | InitialRAMPercentage | MaxRAMPercentage | MinRAMPercentage | MaxHeapSize"
+```

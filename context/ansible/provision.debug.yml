@@ -1,9 +1,0 @@
----
-- name: TEST
-  hosts: default
-  become: true
-  gather_facts: false
-  tasks:
-  - ansible.builtin.debug:
-      msg: "Hello"
-...

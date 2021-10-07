@@ -10,31 +10,6 @@ printf "    IP: $(hostname -I)\n"
 printf "    OS: $(cat /etc/issue.net)\n"
 printf "*** CONTAINER INFO ***\n\n"
 
-case "${1}" in
-  'start')
-    printf "[INFO] Starting Payara Server..\n"
-    # Clear all arguments
-    shift "${#}"
-    ;;
-
-  'debug')
-    printf "[INFO] Starting shell..\n\n"
-    exec /bin/bash
-    exit 0
-    ;;
-
-  *)
-    printf "\n[CONTAINER HELP]\n\n"
-    printf "  Valid Commands:\n"
-    printf "    start -> (default) Starts the Payara Server\n"
-    printf "    debug -> Opens shell as root\n\n"
-    printf "  Examples:\n"
-    printf "    docker run --rm -it -p 8080:8080 -p 4848:4848 <container-image>\n"
-    printf "    docker run --rm -it -p 8080:8080 -p 4848:4848 <container-image> debug\n\n"
-    exit 0
-    ;;
-esac
-
 # -----------------------------------------------
 # VALIDATE VARIABLES
 # -----------------------------------------------

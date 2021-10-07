@@ -7,7 +7,7 @@ MAJOR  ?= 5
 MINOR  ?= 2021.7
 JAVA   ?= openjdk-11-jre-headless
 NAME   ?= local/payara
-TAGS   ?= ["jre","dev","local"]
+TAGS   ?= ["local"]
 
 # =================================================================================================
 # PACKER VARIABLES
