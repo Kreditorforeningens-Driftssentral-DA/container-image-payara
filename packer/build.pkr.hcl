@@ -160,7 +160,7 @@ build {
         "ENV ADMIN_USER admin",
         "ENV PATH_ADMIN_SECRET $${PAYARA_DIR}/secret.txt",
         "WORKDIR $${PAYARA_DIR}",
-        "CMD [\"/usr/bin/tini\",\"--\",\"/docker-entrypoint.sh\"]",
+        "CMD [\"/docker-entrypoint.sh\"]",
       ]
     }
 

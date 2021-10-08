@@ -65,8 +65,8 @@
     - name: installing requried entrypoint packages
       ansible.builtin.package:
         name:
+        - dumb-init
         - gosu
-        - tini
         state: latest
 
 # ----------------------------------------------------------------------------------------------

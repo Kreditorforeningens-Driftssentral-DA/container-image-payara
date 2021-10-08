@@ -2,6 +2,9 @@
 
 ## BUILD 5.2021.7-11
 #### CHANGES (2021-09-29)
+  * Change to dumb-init instead of tini
+  * Add "JAVA_TOOL_OPTIONS" as global variable (e.g. passing '-XX:MaxRAMPercentage' when using non-root user)
+#### CHANGES (2021-09-29)
   * Payara version 5.2021.7
   * Packer build refactor/cleanup
 

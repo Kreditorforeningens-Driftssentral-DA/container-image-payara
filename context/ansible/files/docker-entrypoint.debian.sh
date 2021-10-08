@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/dumb-init /bin/sh
 
 # -----------------------------------------------
 # VALIDATE STARTUP COMMAND
@@ -155,6 +155,9 @@ if id ${PAYARA_USER} >/dev/null 2<&1; then
   chown -HR ${PAYARA_USER}:root ${CONFIG_DIR}
   chown -HR ${PAYARA_USER}:root ${DEPLOY_DIR}
   chown -HR ${PAYARA_USER}:root ${SCRIPT_DIR}
+
+  # Make JVM-variable(s) global, if running as non-root. Not passed when using gosu
+  echo JAVA_TOOL_OPTIONS=${JAVA_TOOL_OPTIONS}|tee -a /etc/environment
   set -- gosu ${PAYARA_USER} ${@}
 else
   printf "[WARNING] User \"${PAYARA_USER}\" doesn't exist. Starting server as \"root\"\n"
