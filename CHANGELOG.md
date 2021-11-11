@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## BUILD 6.2021.1-11 (Alpha)
+#### CHANGES (2021-11-11)
+  * New Payara version (Alpha)
+  * Added scheduled Github Action for building Payara v6
+
+## BUILD 5.2021.8-11
+#### CHANGES (2021-11-11)
+  * New Payara version
+  * Changed "extra-vars" to "env-vars" in ansible provisioning step. In earlier config, values were not picked up from packer (used defaults from playbook).
+
 ## BUILD 5.2021.7-11
 #### CHANGES (2021-09-29)
   * Change to dumb-init instead of tini

@@ -89,8 +89,8 @@ build {
 
     inline = [
       <<-PREPROVISION
-      apk add --no-cache tar unzip curl
-      apk add --no-cache tar python3
+      apk add --no-cache tar unzip curl dumb-init su-exec
+      apk add --no-cache python3
       apk add --no-cache ${local.java_platform}${local.java_version}-${local.java_edition}
       PREPROVISION
     ]
@@ -102,18 +102,15 @@ build {
 
   provisioner "ansible" {
     only = [
-      "docker.DEBIAN",
-      "docker.UBUNTU",
+      "docker.ALPINE",
     ]
 
     user = "root"
-    playbook_file = "./context/ansible/provision.debian.yml"
+    playbook_file = "./context/ansible/provision.alpine.yml"
     extra_arguments = [
       "--extra-vars",
       join(" ", [
         "\"",
-        "TIMEZONE_CONTINENT=${local.timezone_continent}",
-        "TIMEZONE_CITY=${local.timezone_city}",
         "JAVA_MAX_RAM=${local.java_max_ram}",
         "PAYARA_USER=${local.payara_user}",
         "PAYARA_HOME=${local.payara_home}",
@@ -123,6 +120,28 @@ build {
         "PAYARA_ASADMIN_PASSWORD=${local.payara_asadmin_password}",
         "\"",
       ])
+    ]
+  }
+
+  provisioner "ansible" {
+    only = [
+      "docker.DEBIAN",
+      "docker.UBUNTU",
+    ]
+
+    user = "root"
+    playbook_file = "./context/ansible/provision.debian.yml"
+    
+    ansible_env_vars = [
+      "TIMEZONE_CONTINENT=${local.timezone_continent}",
+      "TIMEZONE_CITY=${local.timezone_city}",
+      "JAVA_MAX_RAM=${local.java_max_ram}",
+      "PAYARA_USER=${local.payara_user}",
+      "PAYARA_HOME=${local.payara_home}",
+      "PAYARA_VERSION_MAJOR=${local.payara_version_major}",
+      "PAYARA_VERSION_MINOR=${local.payara_version_minor}",
+      "PAYARA_DOMAIN=${local.payara_domain}",
+      "PAYARA_ASADMIN_PASSWORD=${local.payara_asadmin_password}",
     ]
   }
 
@@ -138,6 +157,7 @@ build {
       only = [
         "docker.DEBIAN",
         "docker.UBUNTU",
+        "docker.ALPINE",
       ]
 
       repository = local.container_registry_name

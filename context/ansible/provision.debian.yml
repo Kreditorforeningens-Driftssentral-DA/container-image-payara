@@ -10,17 +10,17 @@
 
   vars:
     timezone:
-      continent: "{{TIMEZONE_CONTINENT|default('Europe')|string}}"
-      city: "{{TIMEZONE_CITY|default('Oslo')|string}}"
+      continent: "{{lookup('env','TIMEZONE_CONTINENT')|default('Europe')|string}}"
+      city: "{{lookup('env','TIMEZONE_CITY')|default('Oslo')|string}}"
     java:
-      max_ram: "{{JAVA_MAX_RAM|default('85.0')|string}}"
+      max_ram: "{{lookup('env','JAVA_MAX_RAM')|default('85.0')|string}}"
     payara:
-      user: "{{PAYARA_USER|default('payara')|string}}"
-      home: "{{PAYARA_HOME|default('/opt/payara')|string}}"
-      version_major: "{{PAYARA_VERSION_MAJOR|default('5')|string}}"
-      version_minor: "{{PAYARA_VERSION_MINOR|default('2021.7')|string}}"
-      domain: "{{PAYARA_DOMAIN|default('production')|string}}"
-      asadmin_password: "{{PAYARA_ASADMIN_PASSWORD|default('Admin123')|string}}"
+      user: "{{lookup('env','PAYARA_USER')|default('payara')|string}}"
+      home: "{{lookup('env','PAYARA_HOME')|default('/opt/payara')|string}}"
+      version_major: "{{lookup('env','PAYARA_VERSION_MAJOR')|default('5')|string}}"
+      version_minor: "{{lookup('env','PAYARA_VERSION_MINOR')|default('2021.7')|string}}"
+      domain: "{{lookup('env','PAYARA_DOMAIN')|default('production')|string}}"
+      asadmin_password: "{{lookup('env','PAYARA_ASADMIN_PASSWORD')|default('Admin123')|string}}"
 
   tasks:
   

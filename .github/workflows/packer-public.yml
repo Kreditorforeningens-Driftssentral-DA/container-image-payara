@@ -8,6 +8,37 @@ on:
   - cron: '30 0 * * 5' # https://crontab.guru/
 
 jobs:
+  PAYARA-6-ALPHA:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create tag from current year/week
+      id: tag
+      shell: bash
+      run: echo "::set-output name=week::$(date +'%Y.%V')"
+
+    - name: UBUNTU | Build & push public JRE image
+      shell: bash
+      env:
+        FILTER: "*.UBUNTU"
+        PKR_VAR_java_platform: openjdk
+        PKR_VAR_java_version: "11"
+        PKR_VAR_java_edition: jre-headless
+        PKR_VAR_payara_version_major: "6"
+        PKR_VAR_payara_version_minor: "2021.1"
+        PKR_VAR_container_extra_tags: "[\"${{ steps.tag.outputs.week }}\"]"
+        PKR_VAR_container_registry_name: "registry.hub.docker.com/kdsda/payara"
+        PKR_VAR_container_registry_server: "registry.hub.docker.com"
+        PKR_VAR_container_registry_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+        PKR_VAR_container_registry_password: "${{ secrets.DOCKER_HUB_SECRET }}"
+      run: |
+        # [UBUNTU] BUILD & PUSH PAYARA
+        set -eu
+        packer validate ./packer
+        packer fmt -diff -write=false ./packer
+        packer build -only=${FILTER} ./packer
+
   PAYARA-5:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +57,7 @@ jobs:
         PKR_VAR_java_version: "11"
         PKR_VAR_java_edition: jre-headless
         PKR_VAR_payara_version_major: "5"
-        PKR_VAR_payara_version_minor: "2021.7"
+        PKR_VAR_payara_version_minor: "2021.8"
         PKR_VAR_container_extra_tags: "[\"${{ steps.tag.outputs.week }}\"]"
         PKR_VAR_container_registry_name: "registry.hub.docker.com/kdsda/payara"
         PKR_VAR_container_registry_server: "registry.hub.docker.com"
