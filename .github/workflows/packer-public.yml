@@ -26,7 +26,7 @@ jobs:
         PKR_VAR_java_version: "11"
         PKR_VAR_java_edition: jre-headless
         PKR_VAR_payara_version_major: "6"
-        PKR_VAR_payara_version_minor: "2021.1"
+        PKR_VAR_payara_version_minor: "2021.1.Alpha1"
         PKR_VAR_container_extra_tags: "[\"${{ steps.tag.outputs.week }}\"]"
         PKR_VAR_container_registry_name: "registry.hub.docker.com/kdsda/payara"
         PKR_VAR_container_registry_server: "registry.hub.docker.com"
