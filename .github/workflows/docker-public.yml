@@ -41,7 +41,7 @@ jobs:
         # Unsupported build-combinations
         exclude:
         - image: azul/zulu-openjdk-debian:17
-          payara: 6.2021.1.Alpha1
+          version: 6.2021.1.Alpha1
     
     steps:
     -
