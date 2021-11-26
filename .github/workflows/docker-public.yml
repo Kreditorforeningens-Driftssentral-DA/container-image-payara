@@ -35,9 +35,9 @@ jobs:
         # Prefix for exporting images
         include:
         - image: azul/zulu-openjdk-debian:11
-          tag: '11'
+          prefix: '11'
         - image: azul/zulu-openjdk-debian:17
-          tag: '17'
+          prefix: '17'
         # Unsupported build-combinations
         exclude:
         - image: azul/zulu-openjdk-debian:17
@@ -54,7 +54,7 @@ jobs:
       with:
         images: registry.hub.docker.com/kdsda/payara
         flavor: |
-          prefix=${{ matrix.tag }}.${{ matrix.version }}-
+          prefix=${{ matrix.prefix }}.${{ matrix.version }}-
         tags: |
           type=ref,event=branch
           type=edge
@@ -79,7 +79,7 @@ jobs:
       with:
         context: docker
         build-args: |
-          BASE_IMAGE: ${{ matrix.image }}
-          PAYARA_VERSION: ${{ matrix.version }}
+          BASE_IMAGE=${{ matrix.image }}
+          PAYARA_VERSION=${{ matrix.version }}
         tags: ${{ steps.meta.outputs.tags }}
         push: ${{ github.event_name != 'pull_request' }}
