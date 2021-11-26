@@ -35,9 +35,9 @@ jobs:
         # Prefix for exporting images
         include:
         - image: azul/zulu-openjdk-debian:11
-          tag: 11jre
+          tag: '11'
         - image: azul/zulu-openjdk-debian:17
-          tag: 17jre
+          tag: '17'
         # Unsupported build-combinations
         exclude:
         - image: azul/zulu-openjdk-debian:17
