@@ -25,6 +25,7 @@ export PKR_VAR_container_registry_name := ${IMAGE}
 # =================================================================================================
 # PACKER GOALS
 # =================================================================================================
+
 .PHONY: validate build push clean
 
 validate:
@@ -39,4 +40,14 @@ push:
 clean:
 	@rm -rf context/ansible/cache/*
 
-
+# =================================================================================================
+# DOCKER
+# =================================================================================================
+.PHONY: docker
+dbuild:
+	@docker build ./docker \
+	-f ./docker/Dockerfile \
+	-t local/payara:${MAJOR} \
+	--compress \
+	--build-arg BASE_IMAGE=azul/zulu-openjdk-debian:17-jre \
+	--build-arg PAYARA_VERSION=5.2021.9
