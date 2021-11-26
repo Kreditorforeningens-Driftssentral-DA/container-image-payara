@@ -65,11 +65,3 @@ jobs:
           EXTRA_LOCALES: ${EXTRA_LOCALES}
         tags: ${{ steps.meta.outputs.tags }}
         push: true
-    -
-      name: Update description
-      uses: peter-evans/dockerhub-description@v2
-      with:
-        repository: kdsda/payara
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_SECRET }}
-        short-description: ${{ github.event.repository.description }}
