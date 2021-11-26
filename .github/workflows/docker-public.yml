@@ -5,10 +5,13 @@
 # - https://github.com/docker/login-action
 # - https://github.com/docker/build-push-action
 ---
-name: Docker - Payara (Public)
+name: Payara (Public)
 
 on:
   workflow_dispatch:
+  
+  schedule:
+  - cron: '0 0 15 * *' # https://crontab.guru/
 
   push:
     paths:
@@ -32,17 +35,16 @@ jobs:
         version:
         - '5.2021.9'
         - '6.2021.1.Alpha1'
-        # Prefix for exporting images
+        # Meta prefix
         include:
         - image: azul/zulu-openjdk-debian:11
           prefix: '11'
         - image: azul/zulu-openjdk-debian:17
           prefix: '17'
-        # Unsupported build-combinations
+        # Unsupported (failing)
         exclude:
         - image: azul/zulu-openjdk-debian:17
           version: 6.2021.1.Alpha1
-    
     steps:
     -
       name: Checkout
