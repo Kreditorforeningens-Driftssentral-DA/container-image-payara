@@ -7,14 +7,14 @@ ARG BASE_IMAGE="azul/zulu-openjdk-debian:11"
 
 FROM ${BASE_IMAGE}
 
-# 6.2021.1.Alpha1
+# Build Arguments
 ARG PAYARA_VERSION="5.2021.9"
 ARG PAYARA_ADMIN_SECRET="Admin123"
 ARG EXTRA_LOCALES="nb_NO"
 
-# Override at runtime, if required. Example:
-#   * TZ="Europe/Oslo"
-#   * LC_ALL="nb_NO.ISO-8859-1"
+# Override at runtime, if required. Example given:
+#   TZ="Europe/Oslo"
+#   LC_ALL="nb_NO.ISO-8859-1"
 ENV LC_ALL="C" \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError"
 
@@ -32,25 +32,25 @@ ENV CONFIG_DIR="${PAYARA_DIR}/config" \
 ENV PATH_PREBOOT_COMMANDS="${CONFIG_DIR}/preboot-commands.asadmin" \
     PATH_POSTBOOT_COMMANDS="${CONFIG_DIR}/postboot-commands.asadmin"
 
-# Administration
-# 4848 for Admin.
-# 9009 for JAVA_DEBUGGER.
+# PORTS: Administration
+#   4848 for Admin.
+#   9009 for JAVA_DEBUGGER.
 EXPOSE 4848 9009
 
-# Applications
-# 8080 for HTTP Instance.
-# 8181 for HTTP_SSL.
+# PORTS: Applications
+#   8080 for HTTP Instance.
+#   8181 for HTTP_SSL.
 EXPOSE 8080 8181
 
-# Other
-# 7676 for JMS.
-# 3700 for IIOP.
-# 3820 for IIOP_SSL.
-# 3920 for IIOP_MUTUALAUTH.
-# 8686 for JMX_ADMIN.
-# 6666 for OSGI_SHELL.
-# 4900 for Hazelcast DAS.
-# 5900 for Hazelcast Start.
+# PORTS: Other
+#   7676 for JMS.
+#   3700 for IIOP.
+#   3820 for IIOP_SSL.
+#   3920 for IIOP_MUTUALAUTH.
+#   8686 for JMX_ADMIN.
+#   6666 for OSGI_SHELL.
+#   4900 for Hazelcast DAS.
+#   5900 for Hazelcast Start.
 #EXPOSE 7676 3700 3820 3920 8686 6666 4900 5900
 
 # ADD CUSTOM LOCALE(S)
@@ -62,14 +62,14 @@ RUN set -ex \
 RUN set -ex \
   && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
   && apt-get update \
-  && apt-get -qqy install --no-install-recommends  apt-utils > /dev/null 2>&1 \
+  && apt-get -qqy install --no-install-recommends apt-utils > /dev/null 2>&1 \
   && apt-get -qqy install --no-install-recommends tar unzip curl gosu dumb-init \
   && apt-get autoclean
 
 # PAYARA USER CONFIGURATION
 RUN set -ex \
   && useradd --system \
-     --comment "Payara User" \
+     --comment "Payara Service User" \
      --home-dir ${PAYARA_DIR} --no-create-home \
      --user-group \
      ${PAYARA_USER}
