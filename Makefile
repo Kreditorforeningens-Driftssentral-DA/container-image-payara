@@ -22,6 +22,9 @@ export PKR_VAR_payara_version_major    := ${MAJOR}
 export PKR_VAR_payara_version_minor    := ${MINOR}
 export PKR_VAR_container_registry_name := ${IMAGE}
 
+export DOCKER_image 	:= azul/zulu-openjdk-debian:${JAVA_VERSION}
+export DOCKER_version := ${MAJOR}.${MINOR}
+
 # =================================================================================================
 # PACKER GOALS
 # =================================================================================================
@@ -41,13 +44,14 @@ clean:
 	@rm -rf context/ansible/cache/*
 
 # =================================================================================================
-# DOCKER
+# DOCKER GOALS
 # =================================================================================================
 .PHONY: docker
 dbuild:
-	@docker build ./docker \
+	@DOCKER_BUILDKIT=1 \
+	docker build ./docker \
 	-f ./docker/Dockerfile \
 	-t local/payara:${MAJOR} \
 	--compress \
-	--build-arg BASE_IMAGE=azul/zulu-openjdk-debian:17-jre \
-	--build-arg PAYARA_VERSION=5.2021.9
+	--build-arg BASE_IMAGE=${DOCKER_image} \
+	--build-arg PAYARA_VERSION=${DOCKER_version}
