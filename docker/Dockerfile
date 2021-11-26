@@ -101,5 +101,5 @@ RUN set -ex \
   && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} stop-domain --kill=true ${DOMAIN_NAME} \
   && chown -R ${PAYARA_USER}:${PAYARA_USER} ${PAYARA_DIR}
 
-COPY ["docker-entrypoint.sh","/usr/local/bin/docker-entrypoint.sh"]
+COPY --chmod=755 ["docker-entrypoint.sh","/usr/local/bin/docker-entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
