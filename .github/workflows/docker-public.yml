@@ -22,7 +22,7 @@ on:
     - '*.*.*'
 
 jobs:
-  payara-5:
+  payara:
     runs-on: ubuntu-latest
     strategy:
       matrix:
