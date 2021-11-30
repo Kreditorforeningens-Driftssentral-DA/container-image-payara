@@ -29,9 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        jre:
+        java:
         - '11'
-        - '17'
+        #- '17' # MSSQL JDBC in preview only
         payara:
         - '5.2021.9'
         - '6.2021.1.Alpha1'
@@ -40,9 +40,9 @@ jobs:
         #- jre: 11
         #  tag: 'Example'
         # Unsupported (failing)
-        exclude:
-        - jre: '17'
-          payara: 6.2021.1.Alpha1
+        #exclude:
+        #- java: '17'
+        #  payara: 6.2021.1.Alpha1
     steps:
     -
       name: Checkout
@@ -50,7 +50,9 @@ jobs:
     -
       name: Get date
       id: timestamp
-      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      run: |
+        echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        echo "::set-output name=week::$(date +'%Y.%V')"
     -
       name: Docker meta
       id: meta
@@ -59,10 +61,11 @@ jobs:
         images: registry.hub.docker.com/kdsda/payara
         flavor: |
           latest=false
-          prefix=${{ matrix.jre }}.${{ matrix.payara }}-
+          prefix=${{ matrix.java }}.${{ matrix.payara }}-
         tags: |
           type=ref,event=branch
           type=sha,format=long
+          type=raw,value=${{ steps.timestamp.outputs.week }}
         labels: |
           maintainer='drift@kred.no'
           no.kred.image.title='Payara Server'
@@ -95,10 +98,9 @@ jobs:
         file: "docker/Dockerfile.public"
         #builder: ${{ steps.buildx.outputs.name }}
         build-args: |
-          BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.jre }}
+          BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.java }}
           PAYARA_VERSION=${{ matrix.payara }}
-          JRE_VERSION=${{ matrix.jre }}
-          POSTGRES_JDBC_VERSION='42.3.1'
-          MSSQL_JDBC_VERSION='9.4.0'
+          POSTGRES_JDBC_VERSION=42.3.1
+          MSSQL_JDBC_VERSION=9.4.0
         tags: ${{ steps.meta.outputs.tags }}
         push: ${{ github.event_name != 'pull_request' }}

@@ -22,9 +22,9 @@ export PKR_VAR_payara_version_major    := ${MAJOR}
 export PKR_VAR_payara_version_minor    := ${MINOR}
 export PKR_VAR_container_registry_name := ${IMAGE}
 
-export DOCKER_image 	:= azul/zulu-openjdk-debian:${JAVA_VERSION}
-export DOCKER_version := ${MAJOR}.${MINOR}
-export DOCKER_jre     := ${JAVA_VERSION}
+export DOCKER_image  := azul/zulu-openjdk-debian:${JAVA_VERSION}
+export DOCKER_payara := ${MAJOR}.${MINOR}
+export DOCKER_java   := ${JAVA_VERSION}
 
 # =================================================================================================
 # PACKER GOALS
@@ -55,5 +55,5 @@ dpublic:
 	-t ${IMAGE}-public:${MAJOR} \
 	--compress \
 	--build-arg BASE_IMAGE=${DOCKER_image} \
-	--build-arg PAYARA_VERSION=${DOCKER_version} \
-	--build-arg JRE_VERSION=${DOCKER_jre}
+	--build-arg PAYARA_VERSION=${DOCKER_payara} \
+	--build-arg JAVA_VERSION=${DOCKER_java}
