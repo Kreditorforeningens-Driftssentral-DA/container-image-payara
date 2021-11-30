@@ -31,18 +31,17 @@ jobs:
       matrix:
         java:
         - '11'
-        #- '17' # MSSQL JDBC in preview only
+        - '17'
         payara:
         - '5.2021.9'
         - '6.2021.1.Alpha1'
         # Meta prefix
         # include:
-        #- jre: 11
-        #  tag: 'Example'
+        #- java: 11
+        #  tag: 'ExampleTag'
         # Unsupported (failing)
-        #exclude:
-        #- java: '17'
-        #  payara: 6.2021.1.Alpha1
+        exclude:
+        - java: '17'
     steps:
     -
       name: Checkout
@@ -61,10 +60,9 @@ jobs:
         images: registry.hub.docker.com/kdsda/payara
         flavor: |
           latest=false
-          prefix=${{ matrix.java }}.${{ matrix.payara }}-
+          prefix=${{ matrix.payara }}-jdk${{ matrix.java }}-
         tags: |
           type=ref,event=branch
-          type=sha,format=long
           type=raw,value=${{ steps.timestamp.outputs.week }}
         labels: |
           maintainer='drift@kred.no'
@@ -96,11 +94,8 @@ jobs:
       with:
         context: docker
         file: "docker/Dockerfile.public"
-        #builder: ${{ steps.buildx.outputs.name }}
         build-args: |
           BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.java }}
           PAYARA_VERSION=${{ matrix.payara }}
-          POSTGRES_JDBC_VERSION=42.3.1
-          MSSQL_JDBC_VERSION=9.4.0
         tags: ${{ steps.meta.outputs.tags }}
         push: ${{ github.event_name != 'pull_request' }}

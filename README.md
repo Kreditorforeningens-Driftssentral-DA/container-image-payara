@@ -30,8 +30,11 @@ admin / Admin123
 ```
 
 ## TAG FORMAT
-* \<JavaVersion\>.\<PayaraVersion\>-\<BuildTag\>
-* sha-\<SHA\>
+  * \<PayaraVersion\>-\<JavaVersion\>-\<Tag\>
+
+#### Examples:
+  * Branch: 6.2021.1.Alpha1-jdk11-main
+  * Week: 5.2021.9-jdk11-2021.48
 
 ## EXAMPLE USE
 
