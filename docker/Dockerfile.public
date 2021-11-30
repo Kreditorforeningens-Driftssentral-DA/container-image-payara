@@ -8,6 +8,7 @@ ARG BASE_IMAGE="azul/zulu-openjdk-debian:11"
 FROM ${BASE_IMAGE}
 
 # Build Arguments
+ARG JRE_VERSION="11"
 ARG PAYARA_VERSION="5.2021.9"
 ARG PAYARA_ADMIN_SECRET="Admin123"
 ARG EXTRA_LOCALES="nb_NO"
@@ -56,7 +57,7 @@ EXPOSE 8080 8181
 # ADD CUSTOM LOCALE(S)
 RUN set -ex \
   && for PREFIX in ${EXTRA_LOCALES};do sed -i "/${PREFIX}/s/^# \?//g" /etc/locale.gen;done \
-  && locale-gen \
+  && locale-gen
 
 # INSTALL EXTRA PACKAGES
 RUN set -ex \
@@ -91,15 +92,33 @@ RUN set -ex \
   && printf "%s\n" "AS_ADMIN_PASSWORD=${PAYARA_ADMIN_SECRET}" > ${PATH_ADMIN_SECRET}
 
 # CUSTOMIZE PAYARA
+ARG TMP_FOLDER="/tmp/resources"
+ARG POSTGRES_JDBC_VERSION="42.3.1"
+ARG MSSQL_JDBC_VERSION="9.4.0"
+ARG LOGBACK_ENCODER_VERSION="6.6"
+ARG LOGBACK_LIBS_VERSION="1.0.0"
+ARG LOGBACK_DELEGATION_VERSION="1.0.0"
+
 RUN set -ex \
+  && curl -fsSL -o ${DL_FOLDER}/postgresql.jar "https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRES_JDBC_VERSION}/postgresql-${POSTGRES_JDBC_VERSION}.jar" \
+  && curl -fsSL -o ${DL_FOLDER}/mssql.jar "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/${MSSQL_JDBC_VERSION}.jre${JRE_VERSION}/mssql-jdbc-${MSSQL_JDBC_VERSION}.jre${JRE_VERSION}.jar" \
+  && curl -fsSL -o ${DL_FOLDER}/logstash-logback-encoder.jar "https://repo1.maven.org/maven2/net/logstash/logback/logstash-logback-encoder/${LOGBACK_ENCODER_VERSION}/logstash-logback-encoder-${LOGBACK_ENCODER_VERSION}.jar" \
+  && curl -fsSL -o ${DL_FOLDER}/payara-logback-libs.jar "https://repo1.maven.org/maven2/io/github/goodees/payara-logback-libs/${LOGBACK_LIBS_VERSION}/payara-logback-libs-${LOGBACK_LIBS_VERSION}.jar" \
+  && curl -fsSL -o ${DL_FOLDER}/payara-logback-delegation.jar "https://repo1.maven.org/maven2/io/github/goodees/payara-logback-delegation/${LOGBACK_DELEGATION_VERSION}/payara-logback-delegation-${LOGBACK_DELEGATION_VERSION}.jar" \
   && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} start-domain ${DOMAIN_NAME} \
   && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} enable-secure-admin \
-  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} create-jvm-options "\-Dlogback.configurationFile=${CONFIG_DIR}/logback.xml" \
   && for JVM_OPTION in $(${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} list-jvm-options|grep -E "Xm[sx]");do \
        ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} delete-jvm-options ${JVM_OPTION}; \
      done \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} create-jvm-options "\-Dlogback.configurationFile=${CONFIG_DIR}/logback.xml" \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} add-library --type common ${TMP_FOLDER}/logstash-logback-encoder.jar \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} add-library --type common ${TMP_FOLDER}/payara-logback-libs.jar \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} add-library --type common ${TMP_FOLDER}/payara-logback-delegation.jar \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} add-library --type common ${TMP_FOLDER}/postgresql.jar \
+  && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} add-library --type common ${TMP_FOLDER}/mssql.jar \
   && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=${PATH_ADMIN_SECRET} stop-domain --kill=true ${DOMAIN_NAME} \
-  && chown -R ${PAYARA_USER}:${PAYARA_USER} ${PAYARA_DIR}
+  && chown -R ${PAYARA_USER}:${PAYARA_USER} ${PAYARA_DIR} \
+  && rm -rf ${TMP_FOLDER}
 
 COPY --chmod=755 ["docker-entrypoint.sh","/usr/local/bin/docker-entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

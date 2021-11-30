@@ -9,15 +9,23 @@ These images are based on the official Payara Server Community Edition, running 
   * Official Payara [Releases](https://github.com/payara/Payara/releases)
 
 #### Features
-  * Uses gosu & dumb-init
+
+  * Automated monthly builds
+  * Based on Azul Zulu official OpenJDK images
+  * Uses dumb-init & gosu, by default
   * Runs init-scripts as root, before starting the server as unprivileged (default) user.
-  * secure-admin enabled
-  * Improved JVM defaults: '-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError'
-  * Automated monthly builds (ref. workflow)
-  * Logback config-option added (req. file: ${CONFIG_DIR}/logback.xml)
+  * Enabled secure-admin
+  * Default JVM options: '-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError'
+  * Extra libraries:
+    * Postgres JDBC driver
+    * Microsoft SQL JDBC driver
+    * Logstash Logback Encoder
+    * Payara Logback Libs
+    * Payara Logback Delegation
+  * Logback config-option(file: ${CONFIG_DIR}/logback.xml)
 
 ```bash
-# Public image admin-credentials
+# Default admin-credentials
 admin / Admin123
 ```
 

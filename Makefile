@@ -5,7 +5,7 @@
 FILTER        ?= '*.UBUNTU'
 IMAGE         ?= local/payara
 MAJOR         ?= 5
-MINOR         ?= 2021.7
+MINOR         ?= 2021.9
 JAVA_PLATFORM ?= openjdk
 JAVA_VERSION  ?= 11
 JAVA_EDITION  ?= jre-headless
@@ -24,6 +24,7 @@ export PKR_VAR_container_registry_name := ${IMAGE}
 
 export DOCKER_image 	:= azul/zulu-openjdk-debian:${JAVA_VERSION}
 export DOCKER_version := ${MAJOR}.${MINOR}
+export DOCKER_jre     := ${JAVA_VERSION}
 
 # =================================================================================================
 # PACKER GOALS
@@ -47,11 +48,12 @@ clean:
 # DOCKER GOALS
 # =================================================================================================
 .PHONY: docker
-dbuild:
+dpublic:
 	@DOCKER_BUILDKIT=1 \
 	docker build ./docker \
-	-f ./docker/Dockerfile \
-	-t local/payara:${MAJOR} \
+	-f ./docker/Dockerfile.public \
+	-t ${IMAGE}-public:${MAJOR} \
 	--compress \
 	--build-arg BASE_IMAGE=${DOCKER_image} \
-	--build-arg PAYARA_VERSION=${DOCKER_version}
+	--build-arg PAYARA_VERSION=${DOCKER_version} \
+	--build-arg JRE_VERSION=${DOCKER_jre}

@@ -29,26 +29,28 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image:
-        - azul/zulu-openjdk-debian:11
-        - azul/zulu-openjdk-debian:17
-        version:
+        jre:
+        - '11'
+        - '17'
+        payara:
         - '5.2021.9'
         - '6.2021.1.Alpha1'
         # Meta prefix
-        include:
-        - image: azul/zulu-openjdk-debian:11
-          prefix: '11'
-        - image: azul/zulu-openjdk-debian:17
-          prefix: '17'
+        # include:
+        #- jre: 11
+        #  tag: 'Example'
         # Unsupported (failing)
         exclude:
-        - image: azul/zulu-openjdk-debian:17
-          version: 6.2021.1.Alpha1
+        - jre: '17'
+          payara: 6.2021.1.Alpha1
     steps:
     -
       name: Checkout
       uses: actions/checkout@v2
+    -
+      name: Get date
+      id: timestamp
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
     -
       name: Docker meta
       id: meta
@@ -56,17 +58,27 @@ jobs:
       with:
         images: registry.hub.docker.com/kdsda/payara
         flavor: |
-          prefix=${{ matrix.prefix }}.${{ matrix.version }}-
+          latest=false
+          prefix=${{ matrix.jre }}.${{ matrix.payara }}-
         tags: |
           type=ref,event=branch
-          type=edge
-          type=sha
+          type=sha,format=long
+        labels: |
+          maintainer='drift@kred.no'
+          no.kred.image.title='Payara Server'
+          no.kred.image.description='Payara Server (Full)'
+          no.kred.image.version="${{ matrix.payara }}"
+          no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
+          no.kred.image.vendor='Kreditorforeningens Driftssentral DA'
     -
       name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     -
       name: Set up Docker Buildx
+      id: buildx
       uses: docker/setup-buildx-action@v1
+      with:
+        install: true
     -
       name: Login to Registry (Docker Hub)
       if: github.event_name != 'pull_request'
@@ -80,8 +92,13 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: docker
+        file: Dockerfile.public
+        #builder: ${{ steps.buildx.outputs.name }}
         build-args: |
-          BASE_IMAGE=${{ matrix.image }}
-          PAYARA_VERSION=${{ matrix.version }}
+          BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.jre }}
+          PAYARA_VERSION=${{ matrix.payara }}
+          JRE_VERSION=${{ matrix.jre }}
+          POSTGRES_JDBC_VERSION='42.3.1'
+          MSSQL_JDBC_VERSION='9.4.0'
         tags: ${{ steps.meta.outputs.tags }}
         push: ${{ github.event_name != 'pull_request' }}

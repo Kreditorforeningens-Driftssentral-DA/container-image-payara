@@ -10,6 +10,7 @@
 *.tar
 *.tar.gz
 __*
+*.backup
 
 # KEEP
 !.gitignore
