@@ -92,7 +92,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: docker
-        file: "{context}/Dockerfile.public"
+        file: "docker/Dockerfile.public"
         #builder: ${{ steps.buildx.outputs.name }}
         build-args: |
           BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.jre }}
