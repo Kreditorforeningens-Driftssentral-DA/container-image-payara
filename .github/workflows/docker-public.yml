@@ -33,15 +33,16 @@ jobs:
         - '11'
         - '17'
         payara:
-        - '5.2021.9'
         - '6.2021.1.Alpha1'
+        - '5.2021.9'
+        - '5.2021.8'
+        # Unsupported or failing builds
+        exclude:
+        - java: '17' # MSSQL JDBC in preview
         # Meta prefix
         # include:
         #- java: 11
         #  tag: 'ExampleTag'
-        # Unsupported (failing)
-        exclude:
-        - java: '17'
     steps:
     -
       name: Checkout
@@ -65,7 +66,7 @@ jobs:
           type=ref,event=branch
           type=raw,value=${{ steps.timestamp.outputs.week }}
         labels: |
-          maintainer='drift@kred.no'
+          no.kred.image.maintainer='drift@kred.no'
           no.kred.image.title='Payara Server'
           no.kred.image.description='Payara Server (Full)'
           no.kred.image.version="${{ matrix.payara }}"
