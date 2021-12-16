@@ -34,6 +34,7 @@ jobs:
         - '17'
         payara:
         - '6.2021.1.Alpha1'
+        - '5.2021.10'
         - '5.2021.9'
         - '5.2021.8'
         # Unsupported or failing builds

@@ -1,9 +1,5 @@
 #!/usr/bin/dumb-init /bin/sh
 
-# -----------------------------------------------
-# VALIDATE STARTUP COMMAND
-# -----------------------------------------------
-
 printf "\n\n*** CONTAINER INFO ***\n"
 printf "  Host: $(hostname)\n"
 printf "    IP: $(hostname -I)\n"
@@ -32,9 +28,9 @@ if [ -z ${JVM_ARGS} ]; then echo "[INFO] Variable JVM_ARGS is empty."; fi
 if [ -z ${DEPLOY_PROPS} ]; then echo "[INFO] Variable DEPLOY_PROPS is empty."; fi
 
 # -----------------------------------------------
-# ISSUES
+# ISSUE: https://github.com/payara/Payara/issues/2267
+# Append hostname to hostsfile on startup
 # -----------------------------------------------
-# Workaround https://github.com/payara/Payara/issues/2267
 echo 127.0.0.1 `cat /etc/hostname` | tee -a /etc/hosts
 
 # -----------------------------------------------
@@ -51,8 +47,6 @@ printf '#!/usr/bin/env bash\necho "init-scripts.."\n' > ${SCRIPT_DIR}/init_0_dum
 printf '#!/usr/bin/env bash\necho "user-scripts.."\n' > ${SCRIPT_DIR}/init.d/dummy.sh
 
 # Execute init-scripts
-#printf "[INFO] Files in ${SCRIPT_DIR}\n"
-#find ${SCRIPT_DIR} -maxdepth 1 -type f
 for file in ${SCRIPT_DIR}/init_*.sh; do
   printf "[Entrypoint] Running ${file}\n"
   chmod +x ${file}
@@ -60,8 +54,6 @@ for file in ${SCRIPT_DIR}/init_*.sh; do
 done
 
 # Execute other scripts
-#printf "[INFO] Files in ${SCRIPT_DIR}/init.d"
-#find ${SCRIPT_DIR}/init.d -maxdepth 1 -type f 
 for file in ${SCRIPT_DIR}/init.d/*.sh; do
   printf "[Entrypoint] Running ${file}\n"
   chmod +x ${file}
@@ -79,7 +71,7 @@ printf "[INFO] Creating post-boot command file, if missing\n"
 touch ${PATH_POSTBOOT_COMMANDS}
 
 # -----------------------------------------------
-# CONFIGURE AUTO-DEPLOYMENT
+# CONFIGURE AUTO-DEPLOYMENTS
 # -----------------------------------------------
 
 printf "[INFO] Creating deployment directory, if missing\n"
