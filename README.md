@@ -8,6 +8,11 @@ These images are based on the official Payara Server Community Edition, running 
   * Image on [DockerHub](https://registry.hub.docker.com/r/kdsda/payara)
   * Official Payara [Releases](https://github.com/payara/Payara/releases)
 
+| IMAGE | COMPRESSED | UNCOMPRESSED |
+| :-- | :-: | :-: |
+| DEBIAN |  550MB | ~930MB |
+
+
 #### Features
 
   * Automated monthly builds
