@@ -13,17 +13,6 @@ on:
   schedule:
   - cron: '0 0 15 * *' # https://crontab.guru/
 
-  push:
-    paths:
-    - 'docker/*'
-
-    branches:
-    - main
-    - develop
-
-    tags:
-    - '*.*.*'
-
 jobs:
   payara:
     runs-on: ubuntu-latest
@@ -67,12 +56,12 @@ jobs:
           type=ref,event=branch
           type=raw,value=${{ steps.timestamp.outputs.week }}
         labels: |
-          no.kred.image.maintainer='drift@kred.no'
+          no.kred.image.maintainer='Kreditorforeningen'
           no.kred.image.title='Payara Server'
           no.kred.image.description='Payara Server (Full)'
           no.kred.image.version="${{ matrix.payara }}"
           no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
-          no.kred.image.vendor='Kreditorforeningens Driftssentral DA'
+          no.kred.image.vendor='Kreditorforeningen'
     -
       name: Set up QEMU
       uses: docker/setup-qemu-action@v1
@@ -84,7 +73,6 @@ jobs:
         install: true
     -
       name: Login to Registry (Docker Hub)
-      if: github.event_name != 'pull_request'
       uses: docker/login-action@v1 
       with:
         registry: registry.hub.docker.com
@@ -96,8 +84,14 @@ jobs:
       with:
         context: docker
         file: "docker/Dockerfile.public"
+        tags: ${{ steps.meta.outputs.tags }}
+        push: true
         build-args: |
           BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.java }}
+          JAVA_VERSION=${{ matrix.java }}
           PAYARA_VERSION=${{ matrix.payara }}
-        tags: ${{ steps.meta.outputs.tags }}
-        push: ${{ github.event_name != 'pull_request' }}
+          PAYARA_ADMIN_SECRET=Admin123
+          POSTGRES_JDBC_VERSION=42.3.1
+          MSSQL_JDBC_VERSION=9.4.1
+
+
