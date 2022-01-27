@@ -1,21 +1,25 @@
-# Actions:
-# - https://github.com/marketplace/actions/build-and-push-docker-images
-# - https://github.com/docker/metadata-action
-# - https://github.com/docker/setup-buildx-action
-# - https://github.com/docker/login-action
-# - https://github.com/docker/build-push-action
 ---
-name: Payara (Public)
+name: Build (GitHub)
 
 on:
   workflow_dispatch:
   
   schedule:
-  - cron: '0 0 15 * *' # https://crontab.guru/
+  - cron: '30 0 1 * *' # https://crontab.guru/
+
+env:
+  REGISTRY: ghcr.io
+  REGISTRY_IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   payara:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      packages: write
+      contents: read
+
     strategy:
       matrix:
         java:
@@ -24,19 +28,20 @@ jobs:
         payara:
         - '6.2021.1.Alpha1'
         - '5.2021.10'
-        - '5.2021.9'
-        - '5.2021.8'
-        # Unsupported or failing builds
         exclude:
         - java: '17' # MSSQL JDBC in preview
-        # Meta prefix
-        # include:
-        #- java: 11
-        #  tag: 'ExampleTag'
+
     steps:
     -
       name: Checkout
       uses: actions/checkout@v2
+    -
+      name: Login to Registry (GitHub)
+      uses: docker/login-action@v1 
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     -
       name: Get date
       id: timestamp
@@ -48,7 +53,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: registry.hub.docker.com/kdsda/payara
+        images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE_NAME }}
         flavor: |
           latest=false
           prefix=${{ matrix.payara }}-jdk${{ matrix.java }}-
@@ -58,7 +63,7 @@ jobs:
         labels: |
           no.kred.image.maintainer='Kreditorforeningen'
           no.kred.image.title='Payara Server'
-          no.kred.image.description='Payara Server (Full)'
+          no.kred.image.description='Payara Server Full (Community)'
           no.kred.image.version="${{ matrix.payara }}"
           no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
           no.kred.image.vendor='Kreditorforeningen'
@@ -72,19 +77,13 @@ jobs:
       with:
         install: true
     -
-      name: Login to Registry (Docker Hub)
-      uses: docker/login-action@v1 
-      with:
-        registry: registry.hub.docker.com
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_SECRET }}
-    -
       name: Build and push
       uses: docker/build-push-action@v2
       with:
         context: docker
         file: "docker/Dockerfile.public"
         tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         push: true
         build-args: |
           BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.java }}
@@ -93,5 +92,3 @@ jobs:
           PAYARA_ADMIN_SECRET=Admin123
           POSTGRES_JDBC_VERSION=42.3.1
           MSSQL_JDBC_VERSION=9.4.1
-
-

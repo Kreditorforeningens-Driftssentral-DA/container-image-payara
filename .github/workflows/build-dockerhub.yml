@@ -1,0 +1,91 @@
+---
+name: Build (Docker Hub)
+
+on:
+  workflow_dispatch:
+  
+  schedule:
+  - cron: '15 0 15 */2 *' # https://crontab.guru/
+
+jobs:
+  payara:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java:
+        - '11'
+        - '17'
+        payara:
+        - '6.2021.1.Alpha1'
+        - '5.2021.10'
+        - '5.2021.9'
+        - '5.2021.8'
+        # Unsupported or failing builds
+        exclude:
+        - java: '17' # MSSQL JDBC in preview
+        # Meta prefix
+        # include:
+        #- java: 11
+        #  tag: 'ExampleTag'
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Get date
+      id: timestamp
+      run: |
+        echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        echo "::set-output name=week::$(date +'%Y.%V')"
+    -
+      name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: registry.hub.docker.com/kdsda/payara
+        flavor: |
+          latest=false
+          prefix=${{ matrix.payara }}-jdk${{ matrix.java }}-
+        tags: |
+          type=ref,event=branch
+          type=raw,value=${{ steps.timestamp.outputs.week }}
+        labels: |
+          no.kred.image.maintainer='Kreditorforeningen'
+          no.kred.image.title='Payara Server'
+          no.kred.image.description='Payara Server (Full)'
+          no.kred.image.version="${{ matrix.payara }}"
+          no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
+          no.kred.image.vendor='Kreditorforeningen'
+    -
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    -
+      name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        install: true
+    -
+      name: Login to Registry (Docker Hub)
+      uses: docker/login-action@v1 
+      with:
+        registry: registry.hub.docker.com
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_SECRET }}
+    -
+      name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: docker
+        file: "docker/Dockerfile.public"
+        tags: ${{ steps.meta.outputs.tags }}
+        push: true
+        build-args: |
+          BASE_IMAGE=azul/zulu-openjdk-debian:${{ matrix.java }}
+          JAVA_VERSION=${{ matrix.java }}
+          PAYARA_VERSION=${{ matrix.payara }}
+          PAYARA_ADMIN_SECRET=Admin123
+          POSTGRES_JDBC_VERSION=42.3.1
+          MSSQL_JDBC_VERSION=9.4.1
+
+

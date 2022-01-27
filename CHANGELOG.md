@@ -1,21 +1,22 @@
 # CHANGELOG
 
+## 2022-01-27
+  * New action for build/push to GitHub packages.
+  * Renamed build action(s).
+
 ## 2022-01-23
   * Updated mssql jdbc driver to latest version & triggered action/build.
   * Changed pipeline to only trigger manually & on schedule.
-
 
 ## BUILD 6.2021.1-11 (Alpha)
 #### CHANGES (2021-11-11)
   * New Payara version (Alpha)
   * Added scheduled Github Action for building Payara v6
 
-
 ## BUILD 5.2021.8-11
 #### CHANGES (2021-11-11)
   * New Payara version
   * Changed "extra-vars" to "env-vars" in ansible provisioning step. In earlier config, values were not picked up from packer (used defaults from playbook).
-
 
 ## BUILD 5.2021.7-11
 #### CHANGES (2021-09-29)
@@ -24,7 +25,6 @@
 #### CHANGES (2021-09-29)
   * Payara version 5.2021.7
   * Packer build refactor/cleanup
-
 
 ## BUILD 5.2021.6-11
 #### CHANGES (2021-08-25)
