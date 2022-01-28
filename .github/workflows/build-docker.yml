@@ -66,9 +66,9 @@ jobs:
           ${{ env.REGISTRY_GITHUB }}/${{ env.REGISTRY_GITHUB_IMAGE }}
           ${{ env.REGISTRY_DOCKERHUB }}/${{ env.REGISTRY_DOCKERHUB_IMAGE }}
         flavor: |
-          type=ref,event=branch
           prefix=${{ matrix.payara }}-jdk${{ matrix.java }}-
         tags: |
+          type=ref,event=branch
           type=raw,value=${{ steps.timestamp.outputs.week }}
     -
       name: Set up Docker Buildx
