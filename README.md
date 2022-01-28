@@ -1,12 +1,11 @@
 # PAYARA SERVER
-[![Build (GitHub)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-github.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-github.yml)
-[![Build (Docker Hub)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-dockerhub.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-dockerhub.yml)
+[![Build (Docker)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/actions/workflows/build-docker.yml)
 
 These images are based on the official Payara Server Community Edition, running on Azul Zulu OpenJDK (Debian)
 
-  * Image on [DockerHub](https://registry.hub.docker.com/r/kdsda/payara)
-  * Image on [GitHub](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/pkgs/container/container-image-payara)
   * Source on [GitHub](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara)
+  * Pull from [GitHub](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-payara/pkgs/container/container-image-payara)
+  * Pull from [DockerHub](https://registry.hub.docker.com/r/kdsda/payara)
   * Official Payara [Releases](https://github.com/payara/Payara/releases)
 
 | IMAGE | COMPRESSED | UNCOMPRESSED |
