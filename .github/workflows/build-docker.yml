@@ -1,20 +1,22 @@
 ---
-name: Build (GitHub)
+name: Build (Docker)
 
 on:
   workflow_dispatch:
   
-  #schedule:
-  #- cron: '30 0 1 * *' # https://crontab.guru/
+  schedule:
+  - cron: '30 0 15 * *' # https://crontab.guru/
 
 env:
-  REGISTRY: ghcr.io
-  REGISTRY_IMAGE_NAME: ${{ github.repository }}
+  REGISTRY_GITHUB: ghcr.io
+  REGISTRY_GITHUB_IMAGE: ${{ github.repository }}
+  REGISTRY_DOCKERHUB: registry.hub.docker.com
+  REGISTRY_DOCKERHUB_IMAGE: kdsda/payara
 
 jobs:
   payara:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     permissions:
       packages: write
@@ -39,9 +41,16 @@ jobs:
       name: Login to Registry (GitHub)
       uses: docker/login-action@v1 
       with:
-        registry: ${{ env.REGISTRY }}
+        registry: ${{ env.REGISTRY_GITHUB }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Login to Registry (DockerHub)
+      uses: docker/login-action@v1 
+      with:
+        registry: ${{ env.REGISTRY_DOCKERHUB }}
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_SECRET }}
     -
       name: Get date
       id: timestamp
@@ -49,27 +58,18 @@ jobs:
         echo "::set-output name=date::$(date +'%Y-%m-%d')"
         echo "::set-output name=week::$(date +'%Y.%V')"
     -
-      name: Docker meta
+      name: Docker metadata
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE_NAME }}
+        images: |
+          ${{ env.REGISTRY_GITHUB }}/${{ env.REGISTRY_GITHUB_IMAGE }}
+          ${{ env.REGISTRY_DOCKERHUB }}/${{ env.REGISTRY_DOCKERHUB_IMAGE }}
         flavor: |
-          latest=false
+          type=ref,event=branch
           prefix=${{ matrix.payara }}-jdk${{ matrix.java }}-
         tags: |
-          type=ref,event=branch
           type=raw,value=${{ steps.timestamp.outputs.week }}
-        labels: |
-          no.kred.image.maintainer='Kreditorforeningen'
-          no.kred.image.title='Payara Server'
-          no.kred.image.description='Payara Server Full (Community)'
-          no.kred.image.version="${{ matrix.payara }}"
-          no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
-          no.kred.image.vendor='Kreditorforeningen'
-    -
-      name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
     -
       name: Set up Docker Buildx
       id: buildx

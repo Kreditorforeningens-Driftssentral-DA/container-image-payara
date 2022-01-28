@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2022-01-28
+  * Combined docker-build/push actions; removed schedule for individual actions; updated labels.
+
 ## 2022-01-27
   * New action for build/push to GitHub packages.
   * Renamed build action(s).

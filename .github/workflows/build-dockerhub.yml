@@ -4,8 +4,8 @@ name: Build (Docker Hub)
 on:
   workflow_dispatch:
   
-  schedule:
-  - cron: '15 0 15 */2 *' # https://crontab.guru/
+  #schedule:
+  #- cron: '15 0 15 */2 *' # https://crontab.guru/
 
 jobs:
   payara:
