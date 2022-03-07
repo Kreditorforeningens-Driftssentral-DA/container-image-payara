@@ -2,7 +2,7 @@
 
 ## 2022-03-07
   * Removed auto-builds: 2021.1.Alpha1, 5.2021.9, 5.2021.8
-  * Added auto-builds: 6.2022.1.Alpha2, 5.2022.1
+  * Added auto-builds: 5.2022.1
   * Updated postgres-jdbc: 42.3.3
 
 ## 2022-01-28
