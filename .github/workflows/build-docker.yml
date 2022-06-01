@@ -31,9 +31,8 @@ jobs:
         #- '6.2022.1.Alpha2'
         - '5.2022.2'
         - '5.2022.1'
-        - '5.2021.10'
-        exclude:
-        - java: '17' # MSSQL JDBC in preview
+        exclude: []
+        #- java: '17' # MSSQL JDBC out of preview
 
     steps:
     -
@@ -92,5 +91,5 @@ jobs:
           JAVA_VERSION=${{ matrix.java }}
           PAYARA_VERSION=${{ matrix.payara }}
           PAYARA_ADMIN_SECRET=Admin123
-          POSTGRES_JDBC_VERSION=42.3.3
-          MSSQL_JDBC_VERSION=9.4.1
+          POSTGRES_JDBC_VERSION=42.3.6
+          MSSQL_JDBC_VERSION=10.2.1

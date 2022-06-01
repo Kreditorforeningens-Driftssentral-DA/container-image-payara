@@ -1,6 +1,11 @@
 # CHANGELOG
 
 ## 2022-03-07
+  * Cleanup auto-builds: 5.2022.1, 5.2022.2
+  * Include java 17 to build-matrix; mssql jdbc for java 17 out of preview
+  * Updated postgres-jdbc: 42.3.6
+
+## 2022-03-07
   * Removed auto-builds: 2021.1.Alpha1, 5.2021.9, 5.2021.8
   * Added auto-builds: 5.2022.1
   * Updated postgres-jdbc: 42.3.3
