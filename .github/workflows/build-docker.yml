@@ -28,11 +28,10 @@ jobs:
         - '11'
         - '17'
         payara:
-        #- '6.2022.1.Alpha4'
+        - '6.2022.1'
+        - '5.2022.4'
         - '5.2022.3'
-        - '5.2022.2'
         exclude: []
-        #- java: '17' # MSSQL JDBC out of preview
 
     steps:
     -
