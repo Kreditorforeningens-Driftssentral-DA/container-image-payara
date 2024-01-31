@@ -28,7 +28,7 @@ jobs:
         - '11'
         - '17'
         payara:
-        - '6.2023.8'
+        - '6.2024.1'
         - '5.2022.5'
         exclude: []
 
@@ -89,6 +89,6 @@ jobs:
           JAVA_VERSION=${{ matrix.java }}
           PAYARA_VERSION=${{ matrix.payara }}
           PAYARA_ADMIN_SECRET=Admin123
-          POSTGRES_JDBC_VERSION=42.5.1
-          MSSQL_JDBC_VERSION=11.2.1
+          POSTGRES_JDBC_VERSION=42.7.1
+          MSSQL_JDBC_VERSION=11.2.3
           LOGBACK_ENCODER_VERSION=7.2
